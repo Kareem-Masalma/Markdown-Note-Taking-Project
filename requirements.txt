@@ -1,3 +1,4 @@
+uliweb-alembic
 python-dotenv
 alembic==1.16.4
 annotated-types==0.7.0
