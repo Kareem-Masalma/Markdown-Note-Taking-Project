@@ -8,6 +8,13 @@ from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 from alembic import context
 from src.common.db.connection import Connection as DBConnection
 from src.config.settings import DB_URL
+from src.models.note import Note
+from src.models.history import History
+from src.models.issue import Issue
+from src.models.user import User
+from src.models.tag import Tag
+from src.models.folder import Folder
+from src.models.note_tag import note_tags
 
 config = context.config
 

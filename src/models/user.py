@@ -1,4 +1,3 @@
-from pydantic import EmailStr
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 
@@ -10,7 +9,7 @@ class User(Connection.get_base()):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     username = Column(String, unique=True, nullable=False)
-    email = Column(EmailStr, nullable=False)
+    email = Column(String, nullable=False)
     password = Column(String, nullable=False)
     deleted = Column(Integer, nullable=False, default=0)
 

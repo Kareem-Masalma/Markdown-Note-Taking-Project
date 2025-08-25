@@ -7,6 +7,6 @@ Base = Connection.get_base()
 note_tags = Table(
     "note_tags",
     Base.metadata,
-    Column("note_id", ForeignKey("notes.id"), primary_key=True),
-    Column("tag_id", ForeignKey("tags.id"), primary_key=True),
+    Column("note_id", ForeignKey("Notes.id"), primary_key=True),
+    Column("tag_id", ForeignKey("Tags.id"), primary_key=True),
 )
