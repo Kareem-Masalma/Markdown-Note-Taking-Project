@@ -1,3 +1,7 @@
+"""
+This module to handle the database async connection.
+"""
+
 from typing import AsyncGenerator, Any
 
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
@@ -14,6 +18,10 @@ class Connection:
 
     @staticmethod
     async def get_session() -> AsyncGenerator[AsyncSession, Any]:
+        """
+        This method returns an async session that can handle the database operations.
+        :return: Async session.
+        """
         async with SessionLocal() as session:
             yield session
 

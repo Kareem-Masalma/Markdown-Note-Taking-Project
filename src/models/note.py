@@ -9,12 +9,14 @@ class Note(Connection.get_base()):
     __tablename__ = "Notes"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    title = Column(String, nullable=False, default='unnamed_note')
+    title = Column(String, nullable=False, default="unnamed_note")
     content = Column(Text, default="")
-    user_id = Column(Integer, ForeignKey('Users.id'), nullable=False)
-    parent_id = Column(Integer, ForeignKey('Folders.id'), default='root', nullable=False)
+    user_id = Column(Integer, ForeignKey("Users.id"), nullable=False)
+    parent_id = Column(
+        Integer, ForeignKey("Folders.id"), default="root", nullable=False
+    )
     deleted = Column(Integer, nullable=False, default=0)
 
     user = relationship("User", back_populates="notes")
-    parent = relationship("Folder", back_populates='parent')
+    parent = relationship("Folder", back_populates="parent")
     tags = relationship("Tag", secondary=note_tags, back_populates="notes")

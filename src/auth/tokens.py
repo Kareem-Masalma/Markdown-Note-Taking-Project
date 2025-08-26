@@ -1,3 +1,7 @@
+"""
+This module is for handling jwt tokens, it generates new token, encrypts it, and verify it on login.
+"""
+
 from datetime import datetime, timedelta, UTC
 
 from fastapi import HTTPException
@@ -17,11 +21,14 @@ bearer_scheme = HTTPBearer()
 
 
 def generate_jwt_token(user: User) -> str:
+    """
+    This method is used to generate new token after logging in successfully.
+
+    :param user: The logged-in user.
+    :return: The new jwt token.
+    """
     expire = datetime.now(UTC) + timedelta(minutes=60)
-    payload = {
-        'username': user.username,
-        'exp': int(expire.timestamp())
-    }
+    payload = {"username": user.username, "exp": int(expire.timestamp())}
 
     token = jwt.encode(payload, SECRETE, algorithm=ALGO)
 
@@ -29,15 +36,30 @@ def generate_jwt_token(user: User) -> str:
 
 
 def encrypt_jwt_token(token: str) -> dict[str, str | int]:
+    """
+    This method encrypts a jwt token.
+
+    :param token: The jwt token.
+    :return: Encrypted jwt token.
+    """
     data = jwt.decode(token, SECRETE, ALGO)
     return data
 
 
-def check_token(token: HTTPAuthorizationCredentials = Depends(bearer_scheme),
-                session: AsyncSession = Depends(Connection.get_session)) -> User:
+def check_token(
+    token: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+    session: AsyncSession = Depends(Connection.get_session),
+) -> User:
+    """
+    This method to check token when logging in.
+
+    :param token: The jwt token.
+    :param session: This is the async session used to handle the database.
+    :return: The user on success, else it raises 409 HTTPException.
+    """
     token = token.credentials
     data = encrypt_jwt_token(token)
-    username = data['username']
+    username = data["username"]
     saved_user = UserService.get_user_by_username(username, session)
     if not saved_user:
         raise HTTPException(status_code=409, detail="Unauthorized")

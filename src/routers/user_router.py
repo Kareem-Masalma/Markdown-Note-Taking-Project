@@ -1,4 +1,11 @@
-from fastapi import APIRouter, Depends, Query
+"""
+This module is the FastAPI Router for users related endpoints,
+it manages CRUD operations for users. Register new user, delete
+available user, update user data, read available users from
+database, and Login.
+"""
+
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.tokens import check_token
@@ -10,79 +17,166 @@ from src.services.user_service import UserService
 router = APIRouter()
 
 
-@router.get('/',
-            summary="Get all users",
-            description="This endpoint returns all users available inside the database",
-            response_model=list[UserOut],
-            response_description="The returned data are all the users available inside the database",
-            responses={
-                200: {"description": "All users returned successfully"},
-                404: {"description": "No Users are found"}
-            })
-async def get_all_users(user: User = Depends(check_token), session: AsyncSession = Depends(Connection.get_session)):
+@router.get(
+    "/",
+    summary="Get all users",
+    description="This endpoint returns all users available inside the database",
+    response_model=list[UserOut],
+    response_description="The returned data are all the users available inside the database",
+    responses={
+        200: {"description": "All users returned successfully"},
+        404: {"description": "No Users are found"},
+    },
+    status_code=status.HTTP_200_OK,
+)
+async def get_all_users(
+    user: User = Depends(check_token),
+    session: AsyncSession = Depends(Connection.get_session),
+):
+    """
+    This endpoint is used to get all available users in the system(with delete filed set to 0).
+
+    :param user: Check if the user is authorized to use the endpoint by checking the jwt token sent in the header.
+    :param session: This is the async session used to handle the database.
+    :return: The returned value is a list of users.
+    """
     users = UserService.get_all_users(session)
     return users
 
 
-@router.get('/{username}',
-            summary="Get user by username",
-            description="This endpoint returns a specific user by their username",
-            response_model=UserOut,
-            response_description="The returned data is a user available in the database",
-            responses={
-                200: {"description": "User is found"},
-                404: {"description": "User not found"}
-            })
-async def get_user_by_username(username: str, user: User = Depends(check_token),
-                               session: AsyncSession = Depends(Connection.get_session)):
+@router.get(
+    "/{username}",
+    summary="Get user by username",
+    description="This endpoint returns a specific user by their username",
+    response_model=UserOut,
+    response_description="The returned data is a user available in the database",
+    responses={
+        200: {"description": "User is found"},
+        404: {"description": "User not found"},
+    },
+    status_code=status.HTTP_200_OK,
+)
+async def get_user_by_username(
+    username: str,
+    user: User = Depends(check_token),
+    session: AsyncSession = Depends(Connection.get_session),
+):
+    """
+    This endpoint is used to get a certain user by their username,
+     the user shall be available with deleted field set to 0.
+
+    :param username: The username, unique value for each user.
+    :param user: Check if the user is authorized to use this endpoint by checking the jwt token sent with header.
+    :param session: This is the async session used to handle the database.
+    :return: The returned value is the user if found, if not a 404 HTTPException is raised.
+    """
     user = UserService.get_user_by_username(username, session)
     return user
 
 
-@router.post('/login', summary="Login with username and password",
-             description="This endpoint for a valid user to login using username and password and returns a jwt token on success",
-             response_description="The returned data is a JWT token generated on success login",
-             responses={
-                 200: {"description": "LoggedIn Successfully"},
-                 404: {"description": "User not found"}
-             })
+@router.post(
+    "/login",
+    summary="Login with username and password",
+    description="This endpoint for a valid user to login using username and password and returns a jwt token on success",
+    response_description="The returned data is a JWT token generated on success login",
+    responses={
+        200: {"description": "LoggedIn Successfully"},
+        404: {"description": "User not found"},
+    },
+    status_code=status.HTTP_200_OK,
+)
 async def login(user: UserIn, session: AsyncSession = Depends(Connection.get_session)):
-    return await UserService.signin(user, session)
+    """
+    This endpoint is used to log in. When Logging in successfully an authorization module is called
+    to generate jwt token to return it to the user.
+
+    :param user: This parameter is the user information used to log in (username and password).
+    :param session: This is the async session used to handle the database.
+    :return: The returned value is the jwt token so the user can use to be authorized to use endpoints.
+    """
+    return await UserService.login(user, session)
 
 
-@router.post('/register', summary="Add new user",
-             description="This endpoint for registering new user not available in the database",
-             response_description="The returned data is the new user added to the database",
-             responses={
-                 200: {"description": "Added Successfully"},
-                 409: {"description": "User already exists"}
-             })
-async def register(user: UserIn = Query(..., title="New User", description="The new user to register to database"),
-                   session: AsyncSession = Depends(Connection.get_session)):
+@router.post(
+    "/register",
+    summary="Add new user",
+    description="This endpoint for registering new user not available in the database",
+    response_description="The returned data is the new user added to the database",
+    responses={
+        200: {"description": "Added Successfully"},
+        409: {"description": "User already exists"},
+    },
+    status_code=status.HTTP_201_CREATED,
+)
+async def register(
+    user: UserIn = Query(
+        ..., title="New User", description="The new user to register to database"
+    ),
+    session: AsyncSession = Depends(Connection.get_session),
+):
+    """
+    This endpoint is for creating new user, which is not available in the database even with deleted set to 0.
+
+    :param user: The new user's information.
+    :param session: This is the async session used to handle the database.
+    :return: The new user created with its new auto generated id.
+    """
     return await UserService.register_user(user, session)
 
 
-@router.patch('/{username}', summary="Update user",
-              description="This endpoint updates a user's data by their username",
-              response_description="The returned data is the updated user",
-              responses={
-                  200: {"description": "Updated Successfully"},
-                  404: {"description": "User not found"}
-              })
-async def update_user(username: str, user: UserIn, user_check: User = Depends(check_token),
-                      session: AsyncSession = Depends(Connection.get_session)):
+@router.patch(
+    "/{username}",
+    summary="Update user",
+    description="This endpoint updates a user's data by their username",
+    response_description="The returned data is the updated user",
+    responses={
+        200: {"description": "Updated Successfully"},
+        404: {"description": "User not found"},
+    },
+    status_code=status.HTTP_200_OK,
+)
+async def update_user(
+    username: str,
+    user: UserIn,
+    user_check: User = Depends(check_token),
+    session: AsyncSession = Depends(Connection.get_session),
+):
+    """
+    This endpoint to update available user data, the user shall be available if not HTTPException 404 is raised.
+
+    :param username: The username of the user's data to be updated.
+    :param user: The new data to update.
+    :param user_check: Check if the user is authorized by the jwt token in the header.
+    :param session: This is the async session used to handle the database.
+    :return: Return success if the update is done, if not 404 HTTPException.
+    """
     updated_user = await UserService.update_user(username, user, session)
     return {"success": True, "user": updated_user}
 
 
-@router.delete('/{username}', summary="Delete available user",
-               description="This endpoint deletes a certain user by their username",
-               response_description="The returned data is a message of success",
-               responses={
-                   200: {"description": "Deleted Successfully"},
-                   404: {"description": "User not found"}
-               })
-async def delete_user(username: str, user: User = Depends(check_token),
-                      session: AsyncSession = Depends(Connection.get_session)):
+@router.delete(
+    "/{username}",
+    summary="Delete available user",
+    description="This endpoint deletes a certain user by their username",
+    response_description="The returned data is a message of success",
+    responses={
+        200: {"description": "Deleted Successfully"},
+        404: {"description": "User not found"},
+    },
+    status_code=status.HTTP_200_OK,
+)
+async def delete_user(
+    username: str,
+    user: User = Depends(check_token),
+    session: AsyncSession = Depends(Connection.get_session),
+):
+    """
+    This endpoint to delete an available user from the database with deleted field set to 0.
+
+    :param username: The username of the user's data to be deleted.
+    :param user: Check if the user is authorized by the jwt token in the header.
+    :param session: This is the async session used to handle the database.
+    :return: Success message if the user is deleted, HTTPException 404 if user not found.
+    """
     await UserService.delete_user(username, session)
-    return {'success': True, 'message': f'user {username} deleted'}
+    return {"success": True, "message": f"user {username} deleted"}

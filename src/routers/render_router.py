@@ -6,6 +6,8 @@ from src.common.db.connection import Connection
 router = APIRouter()
 
 
-@router.get('/note/{note_id}')
-async def get_rendered_note(note_id: int, session: AsyncSession = Depends(Connection.get_session)):
+@router.get("/note/{note_id}")
+async def get_rendered_note(
+    note_id: int, session: AsyncSession = Depends(Connection.get_session)
+):
     pass

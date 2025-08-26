@@ -1,3 +1,8 @@
+"""
+This is the ORM module for Users table.
+The table fields are: id, username, email, password, deleted.
+"""
+
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 
