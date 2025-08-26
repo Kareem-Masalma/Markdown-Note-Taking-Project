@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models.user import User
 from src.repositories.user_repository_interface import IUserRepository
-from src.schemas.user_schema import UserUpdate, UserIn
+from src.schemas.user_schema import UserUpdate
 
 
 class UserRepository(IUserRepository):
