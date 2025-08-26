@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth import password, tokens
 from src.models.user import User
-from src.schemas.user_schema import UserIn
+from src.schemas.user_schema import UserIn, UserUpdate
 
 
 class UserService:
@@ -47,7 +47,7 @@ class UserService:
         return user
 
     @staticmethod
-    async def update_user(username: str, user: UserIn, session: AsyncSession):
+    async def update_user(username: str, user: UserUpdate, session: AsyncSession):
         """
         This method is used to update an available user from database with deleted field set to 0,
         exclude_unset is set to be True, which removes the empty fields that aren't meant to be updated.

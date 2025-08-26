@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.auth.tokens import check_token
 from src.common.db.connection import Connection
 from src.models.user import User
-from src.schemas.user_schema import UserOut, UserIn
+from src.schemas.user_schema import UserOut, UserIn, UserUpdate
 from src.services.user_service import UserService
 
 router = APIRouter()
@@ -137,7 +137,7 @@ async def register(
 )
 async def update_user(
     username: str,
-    user: UserIn,
+    user: UserUpdate,
     user_check: User = Depends(check_token),
     session: AsyncSession = Depends(Connection.get_session),
 ):

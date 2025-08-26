@@ -46,3 +46,30 @@ class UserOut(BaseModel):
             "examples": [{"id": 1, "username": "Kareem", "email": "Kareem@example.com"}]
         }
     }
+
+
+class UserUpdate(BaseModel):
+    """User to update"""
+
+    username: str = Field(Optional, description="The new username to update")
+    email: EmailStr | None = Field(
+        Optional, description="The new user email, it should be in email format"
+    )
+    password: str = Field(
+        Optional,
+        min_length=8,
+        max_length=32,
+        description="The new user password, it should be at least 8 characters long",
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "username": "Kareem",
+                    "email": "Kareem@example.com",
+                    "password": "security",
+                }
+            ]
+        }
+    }
