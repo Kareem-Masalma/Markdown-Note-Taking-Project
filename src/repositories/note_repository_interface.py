@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from src.models.note import Note
-from src.schemas.note_schema import NoteIn
+from src.schemas.note_schema import NoteIn, NoteUpdate
 
 
 class INoteRepository(ABC):
@@ -18,7 +18,7 @@ class INoteRepository(ABC):
         pass
 
     @abstractmethod
-    async def update_note(self, note_id: int, stored_note: Note, note: NoteIn):
+    async def update_note(self, stored_note: Note, note: NoteUpdate):
         pass
 
     @abstractmethod
