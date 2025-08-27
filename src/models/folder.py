@@ -10,7 +10,7 @@ class Folder(Connection.get_base()):
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, nullable=False)
     parent_id = Column(
-        Integer, ForeignKey("Folders.id"), default="root", nullable=False
+        Integer, ForeignKey("Folders.id"), default=0, nullable=False
     )
 
     deleted = Column(Integer, nullable=False, default=0)

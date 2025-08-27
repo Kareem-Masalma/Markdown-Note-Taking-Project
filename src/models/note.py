@@ -13,7 +13,7 @@ class Note(Connection.get_base()):
     content = Column(Text, default="")
     user_id = Column(Integer, ForeignKey("Users.id"), nullable=False)
     parent_id = Column(
-        Integer, ForeignKey("Folders.id"), default="root", nullable=False
+        Integer, ForeignKey("Folders.id"), default=0, nullable=False
     )
     deleted = Column(Integer, nullable=False, default=0)
 
