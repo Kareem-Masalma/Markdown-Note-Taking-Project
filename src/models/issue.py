@@ -15,5 +15,6 @@ class Issue(Connection.get_base()):
     error_type = Column(String, nullable=False)
     suggestion = Column(String)
     fixed = Column(Integer, nullable=False, default=0)
+    deleted = Column(Integer, nullable=False, default=0)
 
     revision = relationship("NoteVersion", back_populates="issues")

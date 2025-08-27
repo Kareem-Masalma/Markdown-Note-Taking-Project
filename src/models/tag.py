@@ -10,5 +10,6 @@ class Tag(Connection.get_base()):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, nullable=False)
+    deleted = Column(Integer, nullable=False, default=0)
 
     notes = relationship("Note", secondary=note_tags, back_populates="tags")

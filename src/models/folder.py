@@ -13,5 +13,7 @@ class Folder(Connection.get_base()):
         Integer, ForeignKey("Folders.id"), default="root", nullable=False
     )
 
+    deleted = Column(Integer, nullable=False, default=0)
+
     parent = relationship("Folder", remote_side=[id], back_populates="children")
     children = relationship("Folder", back_populates="parent", cascade="all, delete")

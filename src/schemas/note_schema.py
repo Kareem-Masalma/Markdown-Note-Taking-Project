@@ -1,5 +1,9 @@
-from pydantic import BaseModel
+from typing import Optional
+
+from pydantic import BaseModel, Field
 
 
 class NoteIn(BaseModel):
-    pass
+    title: str = Field
+    content: str = Field
+    user: int = Field
