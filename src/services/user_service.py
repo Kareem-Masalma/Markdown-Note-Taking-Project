@@ -42,7 +42,7 @@ class UserService:
 
         return use
 
-    async def update_user(self, username: str, user: UserUpdate):
+    async def update_user(self, username: str, user: UserUpdate) -> UserUpdate:
         """
         This method is used to update an available user from database with deleted field set to 0,
         exclude_unset is set to be True, which removes the empty fields that aren't meant to be updated.

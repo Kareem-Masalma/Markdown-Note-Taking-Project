@@ -10,7 +10,7 @@ from src.repositories.note_repository import NoteRepository
 from src.schemas.note_schema import NoteUpdate, NoteIn
 
 
-class UserService:
+class NoteService:
 
     def __init__(self, note_repository: NoteRepository):
         self.note_repository = note_repository

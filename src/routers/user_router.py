@@ -1,7 +1,7 @@
 """
 This module is the FastAPI Router for users related endpoints,
 it manages CRUD operations for users. Register new user, delete
-available user, update user data, read available users from
+available user, update user's data, read available users from
 database, and Login.
 """
 
@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.auth.tokens import check_token
 from src.common.db.connection import Connection
 from src.models.user import User
+from src.repositories.user_repository import UserRepository
 from src.schemas.user_schema import UserOut, UserIn, UserUpdate
 from src.services.user_service import UserService
 
@@ -30,8 +31,8 @@ router = APIRouter()
     status_code=status.HTTP_200_OK,
 )
 async def get_all_users(
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+        user: User = Depends(check_token),
+        session: AsyncSession = Depends(Connection.get_session),
 ):
     """
     This endpoint is used to get all available users in the system(with delete filed set to 0).
@@ -40,7 +41,8 @@ async def get_all_users(
     :param session: This is the async session used to handle the database.
     :return: The returned value is a list of users.
     """
-    users = UserService.get_all_users(session)
+    user_service = UserService(UserRepository(session))
+    users = await user_service.get_all_users()
     return users
 
 
@@ -57,9 +59,9 @@ async def get_all_users(
     status_code=status.HTTP_200_OK,
 )
 async def get_user_by_username(
-    username: str,
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+        username: str,
+        user: User = Depends(check_token),
+        session: AsyncSession = Depends(Connection.get_session),
 ):
     """
     This endpoint is used to get a certain user by their username,
@@ -70,7 +72,8 @@ async def get_user_by_username(
     :param session: This is the async session used to handle the database.
     :return: The returned value is the user if found, if not a 404 HTTPException is raised.
     """
-    user = UserService.get_user_by_username(username, session)
+    user_service = UserService(UserRepository(session))
+    user = await user_service.get_user_by_username(username)
     return user
 
 
@@ -94,7 +97,9 @@ async def login(user: UserIn, session: AsyncSession = Depends(Connection.get_ses
     :param session: This is the async session used to handle the database.
     :return: The returned value is the jwt token so the user can use to be authorized to use endpoints.
     """
-    return await UserService.login(user, session)
+    user_service = UserService(UserRepository(session))
+    response = await user_service.login(user)
+    return response
 
 
 @router.post(
@@ -109,10 +114,10 @@ async def login(user: UserIn, session: AsyncSession = Depends(Connection.get_ses
     status_code=status.HTTP_201_CREATED,
 )
 async def register(
-    user: UserIn = Query(
-        ..., title="New User", description="The new user to register to database"
-    ),
-    session: AsyncSession = Depends(Connection.get_session),
+        user: UserIn = Query(
+            ..., title="New User", description="The new user to register to database"
+        ),
+        session: AsyncSession = Depends(Connection.get_session),
 ):
     """
     This endpoint is for creating new user, which is not available in the database even with deleted set to 0.
@@ -121,13 +126,16 @@ async def register(
     :param session: This is the async session used to handle the database.
     :return: The new user created with its new auto generated id.
     """
-    return await UserService.register_user(user, session)
+    user_service = UserService(UserRepository(session))
+    user = await user_service.register_user(user)
+    return user
 
 
 @router.patch(
     "/{username}",
     summary="Update user",
     description="This endpoint updates a user's data by their username",
+    response_model=UserOut,
     response_description="The returned data is the updated user",
     responses={
         200: {"description": "Updated Successfully"},
@@ -136,13 +144,13 @@ async def register(
     status_code=status.HTTP_200_OK,
 )
 async def update_user(
-    username: str,
-    user: UserUpdate,
-    user_check: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+        username: str,
+        user: UserUpdate,
+        user_check: User = Depends(check_token),
+        session: AsyncSession = Depends(Connection.get_session),
 ):
     """
-    This endpoint to update available user data, the user shall be available if not HTTPException 404 is raised.
+    This endpoint to update available user's data, the user shall be available if not HTTPException 404 is raised.
 
     :param username: The username of the user's data to be updated.
     :param user: The new data to update.
@@ -150,8 +158,9 @@ async def update_user(
     :param session: This is the async session used to handle the database.
     :return: Return success if the update is done, if not 404 HTTPException.
     """
-    updated_user = await UserService.update_user(username, user, session)
-    return {"success": True, "user": updated_user}
+    user_service = UserService(UserRepository(session))
+    updated_user = await user_service.update_user(username, user)
+    return updated_user
 
 
 @router.delete(
@@ -166,9 +175,9 @@ async def update_user(
     status_code=status.HTTP_200_OK,
 )
 async def delete_user(
-    username: str,
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+        username: str,
+        user: User = Depends(check_token),
+        session: AsyncSession = Depends(Connection.get_session),
 ):
     """
     This endpoint to delete an available user from the database with deleted field set to 0.
@@ -178,5 +187,6 @@ async def delete_user(
     :param session: This is the async session used to handle the database.
     :return: Success message if the user is deleted, HTTPException 404 if user not found.
     """
-    await UserService.delete_user(username, session)
+    user_service = UserService(UserRepository(session))
+    await user_service.delete_user(username)
     return {"success": True, "message": f"user {username} deleted"}
