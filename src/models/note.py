@@ -18,5 +18,5 @@ class Note(Connection.get_base()):
     deleted = Column(Integer, nullable=False, default=0)
 
     user = relationship("User", back_populates="notes")
-    parent = relationship("Folder", back_populates="parent")
+    parent = relationship("Folder", back_populates="notes")
     tags = relationship("Tag", secondary=note_tags, back_populates="notes")

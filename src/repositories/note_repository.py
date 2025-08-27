@@ -3,8 +3,11 @@ This module is the repository for the note to interact with the database. Basic 
 """
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
+from src.models.folder import Folder
 from src.models.note import Note
+from src.models.tag import Tag
 from src.repositories.note_repository_interface import INoteRepository
 from src.schemas.note_schema import NoteIn, NoteUpdate
 
@@ -29,8 +32,17 @@ class NoteRepository(INoteRepository):
 
         :return: All notes found inside the database.
         """
-        res = await self.session.execute(select(Note).where(Note.deleted == 0))
-        notes: list[Note] = res.scalars().all()
+        query = (
+            select(Note)
+            .where(Note.deleted == 0)
+            .options(
+                selectinload(Note.parent),
+                selectinload(Note.tags),
+                selectinload(Note.user),
+            )
+        )
+        res = await self.session.execute(query)
+        notes = res.scalars().all()
         return notes
 
     async def get_note_by_id(self, note_id: int) -> Note | None:
@@ -40,9 +52,16 @@ class NoteRepository(INoteRepository):
         :param note_id: The id of the note to get.
         :return: The note if found in the database.
         """
-        res = await self.session.execute(
-            select(Note).where((Note.id == note_id) & (Note.deleted == 0))
+        query = (
+            select(Note)
+            .where((Note.deleted == 0) & (Note.id == note_id))
+            .options(
+                selectinload(Note.parent),
+                selectinload(Note.tags),
+                selectinload(Note.user),
+            )
         )
+        res = await self.session.execute(query)
         note = res.scalars().first()
         return note
 

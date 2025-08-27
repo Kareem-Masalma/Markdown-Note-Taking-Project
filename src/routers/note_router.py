@@ -6,7 +6,6 @@ database.
 """
 
 from fastapi import APIRouter, Depends, Response, Header, HTTPException, status
-from lazy_object_proxy.utils import await_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.tokens import check_token
@@ -179,7 +178,9 @@ async def add_new_note(note: NoteIn, user: User = Depends(check_token),
     :param session: This is the async session used to handle the database.
     :return: The note added.
     """
-    pass
+    note_service = NoteService(NoteRepository(session))
+    note = await note_service.add_new_note(note)
+    return note
 
 
 @router.patch("/{note_id}",

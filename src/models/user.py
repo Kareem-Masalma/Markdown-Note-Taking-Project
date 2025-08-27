@@ -18,4 +18,4 @@ class User(Connection.get_base()):
     password = Column(String, nullable=False)
     deleted = Column(Integer, nullable=False, default=0)
 
-    notes = relationship("Notes", back_populates="user")
+    notes = relationship("Note", back_populates="user")

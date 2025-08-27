@@ -88,7 +88,9 @@ async def get_user_by_username(
     },
     status_code=status.HTTP_200_OK,
 )
-async def login(user: UserIn, session: AsyncSession = Depends(Connection.get_session)):
+async def login(user: UserIn = Query(
+    ..., title="Login in", description="User data to login"),
+        session: AsyncSession = Depends(Connection.get_session)):
     """
     This endpoint is used to log in. When Logging in successfully an authorization module is called
     to generate jwt token to return it to the user.

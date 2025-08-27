@@ -17,3 +17,4 @@ class Folder(Connection.get_base()):
 
     parent = relationship("Folder", remote_side=[id], back_populates="children")
     children = relationship("Folder", back_populates="parent", cascade="all, delete")
+    notes = relationship("Note", back_populates="parent")

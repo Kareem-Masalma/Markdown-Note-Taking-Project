@@ -5,7 +5,6 @@ delete user, update user, register new user and login.
 
 from fastapi import HTTPException
 
-
 from src.auth import password, tokens
 from src.models.user import User
 from src.repositories.user_repository import UserRepository
@@ -40,7 +39,7 @@ class UserService:
         if not user:
             raise HTTPException(status_code=404, detail=f"User {username} not found")
 
-        return use
+        return user
 
     async def update_user(self, username: str, user: UserUpdate) -> UserUpdate:
         """
@@ -98,11 +97,11 @@ class UserService:
         :return: The new user created. If the user is already exists it raises 409 HTTPException.
         """
         hashed_password = password.hash_password(user.password)
-        exists = self.user_repository.get_user_by_username(user.username)
+        exists = await self.user_repository.get_user_by_username(user.username)
         if exists:
             raise HTTPException(status_code=409, detail="User already exists")
 
-        new_user = User(user.username, user.email, hashed_password)
+        new_user = User(username=user.username, email=user.email, password=hashed_password)
 
         await self.user_repository.add_new_user(new_user)
 

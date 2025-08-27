@@ -2,6 +2,9 @@ from typing import Optional, List
 
 from pydantic import BaseModel, Field
 
+from src.schemas.folder_schema import ParentOut
+from src.schemas.tag_schema import TagOut
+
 
 class NoteIn(BaseModel):
     """Schema for creating a note"""
@@ -10,9 +13,9 @@ class NoteIn(BaseModel):
     content: str = Field("", description="The content of the note")
     user_id: int = Field(..., description="The ID of the user who owns the note")
     tag_ids: Optional[List[int]] = Field(
-        default=[], description="List of tag IDs attached to the note"
+        default=[0], description="List of tag IDs attached to the note"
     )
-    parent_id: Optional[int] = Field(default="root")
+    parent_id: Optional[int] = Field(default=0)
 
     model_config = {
         "json_schema_extra": {
@@ -35,7 +38,8 @@ class NoteOut(BaseModel):
     title: str
     content: str
     username: str
-    tags: List[str]
+    parent: ParentOut
+    tags: list[TagOut]
 
     model_config = {
         "json_schema_extra": {
@@ -45,7 +49,6 @@ class NoteOut(BaseModel):
                     "title": "Implement the project",
                     "content": "Finish the implementation of the final project for the internship",
                     "username": "kareem",
-                    "tags": ["Project", "Implementation"],
                 }
             ]
         }

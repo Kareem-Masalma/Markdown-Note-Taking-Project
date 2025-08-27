@@ -7,7 +7,9 @@ from fastapi import HTTPException
 
 from src.models.note import Note
 from src.repositories.note_repository import NoteRepository
-from src.schemas.note_schema import NoteUpdate, NoteIn
+from src.schemas.folder_schema import ParentOut
+from src.schemas.note_schema import NoteUpdate, NoteIn, NoteOut
+from src.schemas.tag_schema import TagOut
 
 
 class NoteService:
@@ -15,7 +17,7 @@ class NoteService:
     def __init__(self, note_repository: NoteRepository):
         self.note_repository = note_repository
 
-    async def get_all_notes(self) -> list[Note] | None:
+    async def get_all_notes(self) -> list[NoteOut] | None:
         """
         This method is used to get all available notes inside the database with deleted field set to 0,
         it returns all notes if found, else it raises 404 HTTPException.
@@ -25,9 +27,20 @@ class NoteService:
         notes: list[Note] | None = await self.note_repository.get_all_notes()
         if not notes:
             raise HTTPException(status_code=404, detail="No notes are found")
-        return notes
 
-    async def get_note_by_note_id(self, note_id: int) -> Note | None:
+        return [
+            NoteOut(
+                id=note.id,
+                title=note.title,
+                content=note.content,
+                username=note.user.username,
+                parent=ParentOut(id=note.parent.id, name=note.parent.name),
+                tags=[TagOut(id=tag.id, name=tag.name) for tag in note.tags],
+            )
+            for note in notes
+        ]
+
+    async def get_note_by_note_id(self, note_id: int) -> NoteOut | None:
         """
         This method is used to get an available note with deleted field set to 0 by their note_id,
         it returns the note if found, else it raises a 404 HTTPException.
@@ -38,9 +51,17 @@ class NoteService:
         if not note:
             raise HTTPException(status_code=404, detail=f"Note {note_id} not found")
 
-        return note
+        note_out = NoteOut(
+            id=note.id,
+            title=note.title,
+            content=note.content,
+            username=note.user.username,
+            parent=ParentOut(id=note.parent.id, name=note.parent.name),
+            tags=[TagOut(id=tag.id, name=tag.name) for tag in note.tags],
+        )
+        return note_out
 
-    async def update_note(self, note_id: int, note: NoteUpdate):
+    async def update_note(self, note_id: int, note: NoteUpdate) -> NoteOut:
         """
         This method is used to update an available note from database with deleted field set to 0,
         exclude_unset is set to be True, which removes the empty fields that aren't meant to be updated.
@@ -52,12 +73,19 @@ class NoteService:
 
         stored_note = await self.note_repository.get_note_by_id(note_id)
 
-        if not note_id:
+        if not stored_note:
             raise HTTPException(status_code=404, detail=f"Note {note_id} not found")
 
         await self.note_repository.update_note(stored_note, note)
 
-        return note
+        return NoteOut(
+            id=updated_note.id,
+            title=updated_note.title,
+            content=updated_note.content,
+            username=updated_note.user.username,
+            parent=ParentOut(id=updated_note.parent.id, name=updated_note.parent.name),
+            tags=[TagOut(id=tag.id, name=tag.name) for tag in updated_note.tags],
+        )
 
     async def delete_note(self, note_id: int):
         """
@@ -78,11 +106,11 @@ class NoteService:
         :return: The new note created.
         """
 
-        new_note = Note(note.title, note.content, note.user_id, note.parent_id)
+        new_note = Note(title=note.title, content=note.content, user_id=note.user_id, parent_id=note.parent_id)
 
         await self.note_repository.add_new_note(new_note)
 
         return {
-            "details": "user is registers",
-            "user": {"name": new_note.id, "title": new_note.title},
+            "details": "note is added successfully",
+            "user": {"id": new_note.id, "title": new_note.title},
         }

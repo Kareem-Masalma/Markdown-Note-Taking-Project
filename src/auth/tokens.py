@@ -15,6 +15,7 @@ from src.config.definitions import SECRETE, ALGO
 
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
+from src.repositories.user_repository import UserRepository
 from src.services.user_service import UserService
 
 bearer_scheme = HTTPBearer()
@@ -46,7 +47,7 @@ def encrypt_jwt_token(token: str) -> dict[str, str | int]:
     return data
 
 
-def check_token(
+async def check_token(
     token: HTTPAuthorizationCredentials = Depends(bearer_scheme),
     session: AsyncSession = Depends(Connection.get_session),
 ) -> User:
@@ -60,7 +61,8 @@ def check_token(
     token = token.credentials
     data = encrypt_jwt_token(token)
     username = data["username"]
-    saved_user = UserService.get_user_by_username(username, session)
+    user_service = UserService(UserRepository(session))
+    saved_user = await user_service.get_user_by_username(username)
     if not saved_user:
         raise HTTPException(status_code=409, detail="Unauthorized")
     return saved_user
