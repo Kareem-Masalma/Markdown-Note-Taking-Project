@@ -31,8 +31,8 @@ router = APIRouter()
     status_code=status.HTTP_200_OK,
 )
 async def get_all_users(
-        user: User = Depends(check_token),
-        session: AsyncSession = Depends(Connection.get_session),
+    user: User = Depends(check_token),
+    session: AsyncSession = Depends(Connection.get_session),
 ):
     """
     This endpoint is used to get all available users in the system(with delete filed set to 0).
@@ -59,9 +59,9 @@ async def get_all_users(
     status_code=status.HTTP_200_OK,
 )
 async def get_user_by_username(
-        username: str,
-        user: User = Depends(check_token),
-        session: AsyncSession = Depends(Connection.get_session),
+    username: str,
+    user: User = Depends(check_token),
+    session: AsyncSession = Depends(Connection.get_session),
 ):
     """
     This endpoint is used to get a certain user by their username,
@@ -88,8 +88,7 @@ async def get_user_by_username(
     },
     status_code=status.HTTP_200_OK,
 )
-async def login(user: UserIn,
-        session: AsyncSession = Depends(Connection.get_session)):
+async def login(user: UserIn, session: AsyncSession = Depends(Connection.get_session)):
     """
     This endpoint is used to log in. When Logging in successfully an authorization module is called
     to generate jwt token to return it to the user.
@@ -115,10 +114,10 @@ async def login(user: UserIn,
     status_code=status.HTTP_201_CREATED,
 )
 async def register(
-        user: UserIn = Query(
-            ..., title="New User", description="The new user to register to database"
-        ),
-        session: AsyncSession = Depends(Connection.get_session),
+    user: UserIn = Query(
+        ..., title="New User", description="The new user to register to database"
+    ),
+    session: AsyncSession = Depends(Connection.get_session),
 ):
     """
     This endpoint is for creating new user, which is not available in the database even with deleted set to 0.
@@ -145,10 +144,10 @@ async def register(
     status_code=status.HTTP_200_OK,
 )
 async def update_user(
-        username: str,
-        user: UserUpdate,
-        user_check: User = Depends(check_token),
-        session: AsyncSession = Depends(Connection.get_session),
+    username: str,
+    user: UserUpdate,
+    user_check: User = Depends(check_token),
+    session: AsyncSession = Depends(Connection.get_session),
 ):
     """
     This endpoint to update available user's data, the user shall be available if not HTTPException 404 is raised.
@@ -176,9 +175,9 @@ async def update_user(
     status_code=status.HTTP_200_OK,
 )
 async def delete_user(
-        username: str,
-        user: User = Depends(check_token),
-        session: AsyncSession = Depends(Connection.get_session),
+    username: str,
+    user: User = Depends(check_token),
+    session: AsyncSession = Depends(Connection.get_session),
 ):
     """
     This endpoint to delete an available user from the database with deleted field set to 0.

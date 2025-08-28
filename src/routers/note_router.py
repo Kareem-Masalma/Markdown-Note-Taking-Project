@@ -19,18 +19,22 @@ from src.services.note_service import NoteService
 router = APIRouter()
 
 
-@router.get("/",
-            summary="Get all notes",
-            description="This endpoint returns all notes available inside the database",
-            response_model=list[NoteOut],
-            response_description="The returned data are all the notes available inside the database",
-            responses={
-                200: {"description": "All notes returned successfully"},
-                404: {"description": "No notes are found"},
-            },
-            status_code=status.HTTP_200_OK,
-            )
-async def get_all_notes(user: User = Depends(check_token), session: AsyncSession = Depends(Connection.get_session)):
+@router.get(
+    "/",
+    summary="Get all notes",
+    description="This endpoint returns all notes available inside the database",
+    response_model=list[NoteOut],
+    response_description="The returned data are all the notes available inside the database",
+    responses={
+        200: {"description": "All notes returned successfully"},
+        404: {"description": "No notes are found"},
+    },
+    status_code=status.HTTP_200_OK,
+)
+async def get_all_notes(
+    user: User = Depends(check_token),
+    session: AsyncSession = Depends(Connection.get_session),
+):
     """
     This method is to get all notes in the database, where deleted field is set to be 0.
 
@@ -43,21 +47,25 @@ async def get_all_notes(user: User = Depends(check_token), session: AsyncSession
     return notes
 
 
-@router.get("/{note_id}",
-            summary="Get note by its id",
-            description="This endpoint return a note if available inside the database",
-            response_model=NoteOut,
-            response_description="The returned data is the requested note",
-            responses={
-                200: {"description": "The note requested returned successfully"},
-                304: {"description": "Note not modified"},
-                404: {"description": "Note is not found"},
-            },
-            status_code=status.HTTP_200_OK,
-            )
+@router.get(
+    "/{note_id}",
+    summary="Get note by its id",
+    description="This endpoint return a note if available inside the database",
+    response_model=NoteOut,
+    response_description="The returned data is the requested note",
+    responses={
+        200: {"description": "The note requested returned successfully"},
+        304: {"description": "Note not modified"},
+        404: {"description": "Note is not found"},
+    },
+    status_code=status.HTTP_200_OK,
+)
 async def get_note_by_id(
-        note_id: int, response: Response, if_none_match: str | None = Header(default=None),
-        user: User = Depends(check_token), session: AsyncSession = Depends(Connection.get_session)
+    note_id: int,
+    response: Response,
+    if_none_match: str | None = Header(default=None),
+    user: User = Depends(check_token),
+    session: AsyncSession = Depends(Connection.get_session),
 ):
     """
     This method to get a note by its id.
@@ -80,19 +88,22 @@ async def get_note_by_id(
     return note
 
 
-@router.get("/user/{user_id}",
-            summary="Get all notes for a certain user",
-            description="This endpoint return a all notes of a user if available inside the database",
-            response_model=list[NoteOut],
-            response_description="The returned data is a list of notes",
-            responses={
-                200: {"description": "All notes returned successfully"},
-                404: {"description": "No notes are found"},
-            },
-            status_code=status.HTTP_200_OK,
-            )
+@router.get(
+    "/user/{user_id}",
+    summary="Get all notes for a certain user",
+    description="This endpoint return a all notes of a user if available inside the database",
+    response_model=list[NoteOut],
+    response_description="The returned data is a list of notes",
+    responses={
+        200: {"description": "All notes returned successfully"},
+        404: {"description": "No notes are found"},
+    },
+    status_code=status.HTTP_200_OK,
+)
 async def get_users_notes(
-        user_id: int, user: User = Depends(check_token), session: AsyncSession = Depends(Connection.get_session)
+    user_id: int,
+    user: User = Depends(check_token),
+    session: AsyncSession = Depends(Connection.get_session),
 ):
     """
     This endpoint get all the user's notes available in the database with deleted field set to 0.
@@ -107,19 +118,22 @@ async def get_users_notes(
     return notes
 
 
-@router.get("/history/{note_id}",
-            summary="Get note's history  by its id",
-            description="This endpoint returns note's history if available inside the database",
-            response_model=list[NoteOut],
-            response_description="The returned data is the history of a note",
-            responses={
-                200: {"description": "All note's history is returned successfully"},
-                404: {"description": "Note is not found"},
-            },
-            status_code=status.HTTP_200_OK,
-            )
+@router.get(
+    "/history/{note_id}",
+    summary="Get note's history  by its id",
+    description="This endpoint returns note's history if available inside the database",
+    response_model=list[NoteOut],
+    response_description="The returned data is the history of a note",
+    responses={
+        200: {"description": "All note's history is returned successfully"},
+        404: {"description": "Note is not found"},
+    },
+    status_code=status.HTTP_200_OK,
+)
 async def get_note_history(
-        note_id: int, user: User = Depends(check_token), session: AsyncSession = Depends(Connection.get_session)
+    note_id: int,
+    user: User = Depends(check_token),
+    session: AsyncSession = Depends(Connection.get_session),
 ):
     """
     This endpoint to get the history and all the previous versions of a certain note.
@@ -132,21 +146,23 @@ async def get_note_history(
     pass
 
 
-@router.get("/history/{note_id}/{history_id}",
-            summary="Get note's version",
-            description="This endpoint return a version of a note if available inside the database",
-            response_model=NoteOut,
-            response_description="The returned data is a version of a note",
-            responses={
-                200: {"description": "The requested note's history returned successfully"},
-                404: {"description": "Note is not found"},
-            },
-            status_code=status.HTTP_200_OK, )
+@router.get(
+    "/history/{note_id}/{history_id}",
+    summary="Get note's version",
+    description="This endpoint return a version of a note if available inside the database",
+    response_model=NoteOut,
+    response_description="The returned data is a version of a note",
+    responses={
+        200: {"description": "The requested note's history returned successfully"},
+        404: {"description": "Note is not found"},
+    },
+    status_code=status.HTTP_200_OK,
+)
 async def get_note_old_version(
-        note_id: int,
-        history_id: int,
-        user: User = Depends(check_token),
-        session: AsyncSession = Depends(Connection.get_session),
+    note_id: int,
+    history_id: int,
+    user: User = Depends(check_token),
+    session: AsyncSession = Depends(Connection.get_session),
 ):
     """
     This endpoint returns a certain version of a note from its history.
@@ -160,17 +176,21 @@ async def get_note_old_version(
     pass
 
 
-@router.post("/",
-             summary="Add new note",
-             description="This endpoint adds new note to the database",
-             response_description="The returned data is the added note",
-             responses={
-                 201: {"description": "The note is added successfully"},
-             },
-             status_code=status.HTTP_201_CREATED,
-             )
-async def add_new_note(note: NoteIn, user: User = Depends(check_token),
-                       session: AsyncSession = Depends(Connection.get_session)):
+@router.post(
+    "/",
+    summary="Add new note",
+    description="This endpoint adds new note to the database",
+    response_description="The returned data is the added note",
+    responses={
+        201: {"description": "The note is added successfully"},
+    },
+    status_code=status.HTTP_201_CREATED,
+)
+async def add_new_note(
+    note: NoteIn,
+    user: User = Depends(check_token),
+    session: AsyncSession = Depends(Connection.get_session),
+):
     """
     This method adds new note to the database.
 
@@ -184,20 +204,23 @@ async def add_new_note(note: NoteIn, user: User = Depends(check_token),
     return note
 
 
-@router.patch("/{note_id}",
-              summary="Update note",
-              description="This endpoint updates a note by its id.",
-              response_model=NoteOut,
-              response_description="The returned data is the updated note",
-              responses={
-                  200: {"description": "The note updated successfully"},
-                  404: {"description": "Note is not found"},
-              },
-              status_code=status.HTTP_200_OK,
-              )
+@router.patch(
+    "/{note_id}",
+    summary="Update note",
+    description="This endpoint updates a note by its id.",
+    response_model=NoteOut,
+    response_description="The returned data is the updated note",
+    responses={
+        200: {"description": "The note updated successfully"},
+        404: {"description": "Note is not found"},
+    },
+    status_code=status.HTTP_200_OK,
+)
 async def update_note(
-        note_id: int, note: NoteUpdate, user: User = Depends(check_token),
-        session: AsyncSession = Depends(Connection.get_session)
+    note_id: int,
+    note: NoteUpdate,
+    user: User = Depends(check_token),
+    session: AsyncSession = Depends(Connection.get_session),
 ):
     """
     This endpoint to update available note's data, the note shall be available if not HTTPException 404 is raised.
@@ -213,18 +236,21 @@ async def update_note(
     return note
 
 
-@router.delete("/{note_id}",
-               summary="Delete a note",
-               description="This endpoint deletes a note if available inside the database",
-               response_description="A successful message when deleted.",
-               responses={
-                   200: {"description": "The note deleted successfully"},
-                   404: {"description": "Note is not found"},
-               },
-               status_code=status.HTTP_200_OK,
-               )
+@router.delete(
+    "/{note_id}",
+    summary="Delete a note",
+    description="This endpoint deletes a note if available inside the database",
+    response_description="A successful message when deleted.",
+    responses={
+        200: {"description": "The note deleted successfully"},
+        404: {"description": "Note is not found"},
+    },
+    status_code=status.HTTP_200_OK,
+)
 async def delete_note(
-        note_id: int, user: User = Depends(check_token), session: AsyncSession = Depends(Connection.get_session)
+    note_id: int,
+    user: User = Depends(check_token),
+    session: AsyncSession = Depends(Connection.get_session),
 ):
     """
     This method to delete a note from the database if available, else it raises a 404 HTTPException.

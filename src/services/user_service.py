@@ -101,7 +101,9 @@ class UserService:
         if exists:
             raise HTTPException(status_code=409, detail="User already exists")
 
-        new_user = User(username=user.username, email=user.email, password=hashed_password)
+        new_user = User(
+            username=user.username, email=user.email, password=hashed_password
+        )
 
         await self.user_repository.add_new_user(new_user)
 

@@ -106,7 +106,12 @@ class NoteService:
         :return: The new note created.
         """
 
-        new_note = Note(title=note.title, content=note.content, user_id=note.user_id, parent_id=note.parent_id)
+        new_note = Note(
+            title=note.title,
+            content=note.content,
+            user_id=note.user_id,
+            parent_id=note.parent_id,
+        )
 
         await self.note_repository.add_new_note(new_note)
 

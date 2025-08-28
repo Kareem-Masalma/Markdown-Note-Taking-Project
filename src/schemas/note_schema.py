@@ -75,3 +75,20 @@ class NoteUpdate(BaseModel):
             ]
         }
     }
+
+
+class ChildNotes(BaseModel):
+    """Schema of a child note for a parent folder"""
+    id: int
+    title: str
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "id": 1,
+                    "title": "Implement the project",
+                }
+            ]
+        }
+    }

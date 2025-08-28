@@ -25,8 +25,8 @@ tags_metadata = [
     },
     {
         "name": "Folders",
-        "description": "Manage folders and their subfolders and notes."
-    }
+        "description": "Manage folders and their subfolders and notes.",
+    },
 ]
 
 app = FastAPI(

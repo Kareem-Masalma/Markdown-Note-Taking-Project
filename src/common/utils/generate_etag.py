@@ -1,6 +1,7 @@
 """
 This module is to create the etag used to check if the notes are updated or not when calling them.
 """
+
 import hashlib
 
 

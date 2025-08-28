@@ -51,8 +51,8 @@ def encrypt_jwt_token(token: str) -> dict[str, str | int]:
 
 
 async def check_token(
-        token: HTTPAuthorizationCredentials = Depends(bearer_scheme),
-        session: AsyncSession = Depends(Connection.get_session),
+    token: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+    session: AsyncSession = Depends(Connection.get_session),
 ) -> User:
     """
     This method to check token when logging in.

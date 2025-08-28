@@ -12,9 +12,7 @@ class Note(Connection.get_base()):
     title = Column(String, nullable=False, default="unnamed_note")
     content = Column(Text, default="")
     user_id = Column(Integer, ForeignKey("Users.id"), nullable=False)
-    parent_id = Column(
-        Integer, ForeignKey("Folders.id"), default=0, nullable=False
-    )
+    parent_id = Column(Integer, ForeignKey("Folders.id"), default=0, nullable=False)
     deleted = Column(Integer, nullable=False, default=0)
 
     user = relationship("User", back_populates="notes")

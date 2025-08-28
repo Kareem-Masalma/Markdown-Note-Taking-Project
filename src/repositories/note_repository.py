@@ -1,6 +1,7 @@
 """
 This module is the repository for the note to interact with the database. Basic CRUD operations.
 """
+
 from sqlalchemy import select, insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
