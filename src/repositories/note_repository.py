@@ -1,7 +1,7 @@
 """
 This module is the repository for the note to interact with the database. Basic CRUD operations.
 """
-from sqlalchemy import select
+from sqlalchemy import select, insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -9,7 +9,8 @@ from src.models.folder import Folder
 from src.models.note import Note
 from src.models.tag import Tag
 from src.repositories.note_repository_interface import INoteRepository
-from src.schemas.note_schema import NoteIn, NoteUpdate
+from src.schemas.note_schema import NoteUpdate
+from src.models.note_tag import note_tags
 
 
 class NoteRepository(INoteRepository):
@@ -95,3 +96,28 @@ class NoteRepository(INoteRepository):
         except Exception as e:
             await self.session.rollback()
             raise e
+
+    async def get_user_notes(self, user_id: int) -> list[Note] | None:
+        """
+        This method to get all notes for a certain user by their id.
+
+        :param user_id: The id of the user that the notes belongs to.
+        :return: A list of notes for the user.
+        """
+        query = (
+            select(Note)
+            .where((Note.deleted == 0) & (Note.user_id == user_id))
+            .options(
+                selectinload(Note.parent),
+                selectinload(Note.tags),
+                selectinload(Note.user),
+            )
+        )
+        res = await self.session.execute(query)
+        notes = res.scalars().all()
+        return notes
+
+    async def add_tag_note(self, note_id: int, tag_id: int):
+        stmt = insert(note_tags).values(note_id=note_id, tag_id=tag_id)
+        await self.session.execute(stmt)
+        await self.session.commit()

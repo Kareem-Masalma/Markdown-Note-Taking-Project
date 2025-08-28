@@ -102,7 +102,9 @@ async def get_users_notes(
     :param session: This is the async session used to handle the database.
     :return: The returned value is the notes of a certain user.
     """
-    pass
+    note_service = NoteService(NoteRepository(session))
+    notes = await note_service.get_user_notes(user_id)
+    return notes
 
 
 @router.get("/history/{note_id}",
@@ -161,7 +163,6 @@ async def get_note_old_version(
 @router.post("/",
              summary="Add new note",
              description="This endpoint adds new note to the database",
-             response_model=NoteOut,
              response_description="The returned data is the added note",
              responses={
                  201: {"description": "The note is added successfully"},

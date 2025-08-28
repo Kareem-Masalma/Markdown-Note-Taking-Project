@@ -110,7 +110,29 @@ class NoteService:
 
         await self.note_repository.add_new_note(new_note)
 
+        tags = note.tag_ids
+        if tags:
+            for tag in tags:
+                await self.note_repository.add_tag_note(new_note.id, tag)
+
         return {
             "details": "note is added successfully",
             "user": {"id": new_note.id, "title": new_note.title},
         }
+
+    async def get_user_notes(self, user_id: int) -> list[NoteOut]:
+        notes: list[Note] | None = await self.note_repository.get_user_notes(user_id)
+        if not notes:
+            raise HTTPException(status_code=404, detail="No notes are found")
+
+        return [
+            NoteOut(
+                id=note.id,
+                title=note.title,
+                content=note.content,
+                username=note.user.username,
+                parent=ParentOut(id=note.parent.id, name=note.parent.name),
+                tags=[TagOut(id=tag.id, name=tag.name) for tag in note.tags],
+            )
+            for note in notes
+        ]

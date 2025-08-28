@@ -43,13 +43,16 @@ def encrypt_jwt_token(token: str) -> dict[str, str | int]:
     :param token: The jwt token.
     :return: Encrypted jwt token.
     """
-    data = jwt.decode(token, SECRETE, ALGO)
-    return data
+    try:
+        data = jwt.decode(token, SECRETE, ALGO)
+        return data
+    except Exception as e:
+        raise HTTPException(status_code=409)
 
 
 async def check_token(
-    token: HTTPAuthorizationCredentials = Depends(bearer_scheme),
-    session: AsyncSession = Depends(Connection.get_session),
+        token: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+        session: AsyncSession = Depends(Connection.get_session),
 ) -> User:
     """
     This method to check token when logging in.
