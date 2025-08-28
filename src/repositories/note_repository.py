@@ -79,7 +79,7 @@ class NoteRepository(INoteRepository):
                 setattr(stored_note, field, value)
 
             await self.session.commit()
-            await self.session.refresh(note)
+            await self.session.refresh(stored_note)
         except Exception as e:
             await self.session.rollback()
             raise e

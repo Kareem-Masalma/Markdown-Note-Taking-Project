@@ -79,12 +79,12 @@ class NoteService:
         await self.note_repository.update_note(stored_note, note)
 
         return NoteOut(
-            id=updated_note.id,
-            title=updated_note.title,
-            content=updated_note.content,
-            username=updated_note.user.username,
-            parent=ParentOut(id=updated_note.parent.id, name=updated_note.parent.name),
-            tags=[TagOut(id=tag.id, name=tag.name) for tag in updated_note.tags],
+            id=stored_note.id,
+            title=stored_note.title,
+            content=stored_note.content,
+            username=stored_note.user.username,
+            parent=ParentOut(id=stored_note.parent.id, name=stored_note.parent.name),
+            tags=[TagOut(id=tag.id, name=tag.name) for tag in stored_note.tags],
         )
 
     async def delete_note(self, note_id: int):
@@ -117,7 +117,7 @@ class NoteService:
 
         return {
             "details": "note is added successfully",
-            "user": {"id": new_note.id, "title": new_note.title},
+            "note": {"id": new_note.id, "title": new_note.title},
         }
 
     async def get_user_notes(self, user_id: int) -> list[NoteOut]:

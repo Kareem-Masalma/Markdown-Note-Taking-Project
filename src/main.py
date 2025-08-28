@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from src.routers.user_router import router as user_router
 from src.routers.note_router import router as note_router
 from src.routers.render_router import router as render_router
+from src.routers.folder_router import router as folder_router
 from src.routers.summarizaton_router import router as summarization_router
 
 tags_metadata = [
@@ -12,7 +13,7 @@ tags_metadata = [
     },
     {
         "name": "Notes",
-        "description": "Manage user's notes, CRUD operations, fix issues with notes, and go back to certain state of a note",
+        "description": "Manage user's notes, CRUD operations, fix issues with notes, and go back to certain state of a note.",
     },
     {
         "name": "Render",
@@ -20,8 +21,12 @@ tags_metadata = [
     },
     {
         "name": "External",
-        "description": "Endpoint to call api that summarizes a note or a folder",
+        "description": "Endpoint to call api that summarizes a note or a folder.",
     },
+    {
+        "name": "Folders",
+        "description": "Manage folders and their subfolders and notes."
+    }
 ]
 
 app = FastAPI(
@@ -37,6 +42,7 @@ app = FastAPI(
 
 app.include_router(user_router, prefix="/user", tags=["Users"])
 app.include_router(note_router, prefix="/note", tags=["Notes"])
+app.include_router(folder_router, prefix="/folder", tags=["Folders"])
 app.include_router(render_router, prefix="/render", tags=["Render"])
 app.include_router(summarization_router, prefix="/summ", tags=["External"])
 
