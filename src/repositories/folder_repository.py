@@ -31,10 +31,7 @@ class FolderRepository(IFolderRepository):
 
         :return: All folders found inside the database.
         """
-        query = (
-            select(Folder)
-            .where(Folder.deleted == 0)
-        )
+        query = select(Folder).where(Folder.deleted == 0)
         res = await self.session.execute(query)
         folders = res.scalars().all()
         return folders
@@ -104,9 +101,8 @@ class FolderRepository(IFolderRepository):
         return notes
 
     async def get_folder_by_name_parent(self, folder_name: str, parent_id: int):
-        query = (
-            select(Folder)
-            .where((Folder.name == folder_name) & (Folder.parent_id == parent_id))
+        query = select(Folder).where(
+            (Folder.name == folder_name) & (Folder.parent_id == parent_id)
         )
         res = await self.session.execute(query)
         folder = res.scalars().first()

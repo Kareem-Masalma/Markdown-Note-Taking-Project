@@ -26,7 +26,9 @@ class FolderService:
         :return: The returned value is a list of folders if found.
         """
         try:
-            folders: list[Folder] | None = await self.folder_repository.get_all_folders()
+            folders: list[Folder] | None = (
+                await self.folder_repository.get_all_folders()
+            )
             if not folders:
                 raise HTTPException(status_code=404, detail="No folders are found")
 
@@ -43,14 +45,16 @@ class FolderService:
         :return: The folder's data.
         """
         try:
-            folder: Folder | None = await self.folder_repository.get_folder_by_id(folder_id)
+            folder: Folder | None = await self.folder_repository.get_folder_by_id(
+                folder_id
+            )
             if not folder:
                 raise HTTPException(status_code=404, detail=f"Folder not found")
 
             folder_out = FolderOut(
                 id=folder.id,
                 name=folder.name,
-                parent=ParentOut(id=folder.parent.id, name=folder.parent.name)
+                parent=ParentOut(id=folder.parent.id, name=folder.parent.name),
             )
             return folder_out
         except Exception as e:
@@ -75,7 +79,9 @@ class FolderService:
             folder_out = FolderOut(
                 id=stored_folder.id,
                 name=stored_folder.name,
-                parent=ParentOut(id=stored_folder.parent.id, name=stored_folder.parent.name)
+                parent=ParentOut(
+                    id=stored_folder.parent.id, name=stored_folder.parent.name
+                ),
             )
             return folder_out
         except Exception as e:
@@ -90,6 +96,11 @@ class FolderService:
         :return: True on Success, else it raised 404 HTTPException.
         """
         try:
+            exists = self.get_folder_by_id(folder_id)
+
+            if not exists:
+                raise HTTPException(status_code=404, detail="Folder doesn't exists.")
+
             await self.folder_repository.delete_folder(folder_id)
             return True
         except Exception as e:
@@ -103,11 +114,11 @@ class FolderService:
         :return: The new folder created.
         """
         try:
-            new_folder = Folder(
-                name=folder.name, parent_id=folder.parent
-            )
+            new_folder = Folder(name=folder.name, parent_id=folder.parent)
 
-            exists = await self.check_folder_existence(new_folder.name, new_folder.parent_id)
+            exists = await self.check_folder_existence(
+                new_folder.name, new_folder.parent_id
+            )
             if exists:
                 raise HTTPException(status_code=409, detail="Folder already exists.")
 
@@ -128,7 +139,9 @@ class FolderService:
         :return: Folder child notes.
         """
         try:
-            notes: list[Note] | None = await self.folder_repository.get_folder_notes(folder_id)
+            notes: list[Note] | None = await self.folder_repository.get_folder_notes(
+                folder_id
+            )
             if not notes:
                 raise HTTPException(status_code=404, detail="No notes are found")
 
@@ -155,7 +168,9 @@ class FolderService:
         :return: If the folder exists or not.
         """
         try:
-            exist = await self.folder_repository.get_folder_by_name_parent(folder_name, parent_id)
+            exist = await self.folder_repository.get_folder_by_name_parent(
+                folder_name, parent_id
+            )
             if exist:
                 return True
             return False

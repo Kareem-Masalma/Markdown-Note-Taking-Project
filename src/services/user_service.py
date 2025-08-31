@@ -39,9 +39,13 @@ class UserService:
         :return: The user's data.
         """
         try:
-            user: User | None = await self.user_repository.get_user_by_username(username)
+            user: User | None = await self.user_repository.get_user_by_username(
+                username
+            )
             if not user:
-                raise HTTPException(status_code=404, detail=f"User {username} not found")
+                raise HTTPException(
+                    status_code=404, detail=f"User {username} not found"
+                )
 
             return user
         except Exception as e:
@@ -60,7 +64,9 @@ class UserService:
             stored_user = await self.user_repository.get_user_by_username(username)
 
             if not stored_user:
-                raise HTTPException(status_code=404, detail=f"User {username} not found")
+                raise HTTPException(
+                    status_code=404, detail=f"User {username} not found"
+                )
 
             await self.user_repository.update_user(stored_user, user)
 

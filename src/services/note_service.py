@@ -89,7 +89,9 @@ class NoteService:
                 title=stored_note.title,
                 content=stored_note.content,
                 username=stored_note.user.username,
-                parent=ParentOut(id=stored_note.parent.id, name=stored_note.parent.name),
+                parent=ParentOut(
+                    id=stored_note.parent.id, name=stored_note.parent.name
+                ),
                 tags=[TagOut(id=tag.id, name=tag.name) for tag in stored_note.tags],
             )
         except Exception as e:
@@ -104,6 +106,11 @@ class NoteService:
         :return: True on Success, else it raised 404 HTTPException.
         """
         try:
+            exists = self.get_note_by_note_id(note_id)
+
+            if not exists:
+                raise HTTPException(status_code=404, detail="Note not found.")
+
             await self.note_repository.delete_note(note_id)
             return True
         except Exception as e:
@@ -146,7 +153,9 @@ class NoteService:
         :return: User notes.
         """
         try:
-            notes: list[Note] | None = await self.note_repository.get_user_notes(user_id)
+            notes: list[Note] | None = await self.note_repository.get_user_notes(
+                user_id
+            )
             if not notes:
                 raise HTTPException(status_code=404, detail="No notes are found")
 
