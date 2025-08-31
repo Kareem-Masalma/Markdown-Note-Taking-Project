@@ -72,7 +72,7 @@ async def get_tags_notes(
     session: AsyncSession = Depends(Connection.get_session),
 ):
     tag_service = TagService(TagRepository(session))
-    notes = tag_service.get_tag_notes(tag_id)
+    notes = await tag_service.get_tag_notes(tag_id)
     return notes
 
 

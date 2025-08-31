@@ -75,7 +75,7 @@ class TagService:
         :return: The new tag.
         """
         try:
-            stored_tag = await self.tag_repository.get_tag_by_id(stored_tag.id)
+            stored_tag = await self.tag_repository.get_tag_by_id(tag_id)
 
             if not stored_tag:
                 raise HTTPException(status_code=404, detail="Tag not found")
