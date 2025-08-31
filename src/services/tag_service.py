@@ -66,11 +66,11 @@ class TagService:
         except Exception as e:
             raise e
 
-    async def rename_tag(self, stored_tag: Tag, new_name: str):
+    async def rename_tag(self, tag_id: int, new_name: str):
         """
         This method to rename a certain tag by its id.
 
-        :param stored_tag: The tag to be renamed.
+        :param tag_id: The tag to be renamed.
         :param new_name: The new name for the tag.
         :return: The new tag.
         """

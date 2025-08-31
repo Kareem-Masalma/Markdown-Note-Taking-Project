@@ -12,7 +12,18 @@ from src.services.folder_service import FolderService
 router = APIRouter()
 
 
-@router.get("/")
+@router.get(
+    "/",
+    summary="Get all folders",
+    description="This endpoint return a all folders if available inside the database",
+    response_model=list[FolderOut],
+    response_description="The list of folders",
+    responses={
+        200: {"description": "The folders requested returned successfully"},
+        404: {"description": "No folders found"},
+    },
+    status_code=status.HTTP_200_OK,
+)
 async def get_all_folders(
     user: User = Depends(check_token),
     session: AsyncSession = Depends(Connection.get_session),
