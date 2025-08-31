@@ -66,9 +66,13 @@ async def get_folders_notes(folder_id: int, user: User = Depends(check_token),
              status_code=status.HTTP_201_CREATED, )
 async def create_folder(folder: FolderIn, user: User = Depends(check_token),
                         session: AsyncSession = Depends(Connection.get_session)):
-    folder_service = FolderService(FolderRepository(session))
-    folder = await folder_service.create_folder(folder)
-    return folder
+    try:
+        folder_service = FolderService(FolderRepository(session))
+        folder = await folder_service.create_folder(folder)
+        return folder
+    except Exception as e:
+        await session.rollback()
+        raise e
 
 
 @router.patch("/{folder_id}",
@@ -83,9 +87,13 @@ async def create_folder(folder: FolderIn, user: User = Depends(check_token),
               status_code=status.HTTP_200_OK, )
 async def rename_folder(folder_id: int, new_name: str, user: User = Depends(check_token),
                         session: AsyncSession = Depends(Connection.get_session)):
-    folder_service = FolderService(FolderRepository(session))
-    folder = await folder_service.rename_folder(folder_id, new_name)
-    return folder
+    try:
+        folder_service = FolderService(FolderRepository(session))
+        folder = await folder_service.rename_folder(folder_id, new_name)
+        return folder
+    except Exception as e:
+        await session.rollback()
+        raise e
 
 
 @router.delete("/{folder_id}",
@@ -98,6 +106,10 @@ async def rename_folder(folder_id: int, new_name: str, user: User = Depends(chec
                status_code=status.HTTP_200_OK, )
 async def delete_folder(folder_id: int, user: User = Depends(check_token),
                         session: AsyncSession = Depends(Connection.get_session)):
-    folder_service = FolderService(FolderRepository(session))
-    deleted = await folder_service.delete_folder(folder_id)
-    return deleted
+    try:
+        folder_service = FolderService(FolderRepository(session))
+        deleted = await folder_service.delete_folder(folder_id)
+        return deleted
+    except Exception as e:
+        await session.rollback()
+        raise e

@@ -97,9 +97,13 @@ async def login(user: UserIn, session: AsyncSession = Depends(Connection.get_ses
     :param session: This is the async session used to handle the database.
     :return: The returned value is the jwt token so the user can use to be authorized to use endpoints.
     """
-    user_service = UserService(UserRepository(session))
-    response = await user_service.login(user)
-    return response
+    try:
+        user_service = UserService(UserRepository(session))
+        response = await user_service.login(user)
+        return response
+    except Exception as e:
+        await session.rollback()
+        raise e
 
 
 @router.post(
@@ -126,9 +130,13 @@ async def register(
     :param session: This is the async session used to handle the database.
     :return: The new user created with its new auto generated id.
     """
-    user_service = UserService(UserRepository(session))
-    user = await user_service.register_user(user)
-    return user
+    try:
+        user_service = UserService(UserRepository(session))
+        user = await user_service.register_user(user)
+        return user
+    except Exception as e:
+        await session.rollback()
+        raise e
 
 
 @router.patch(
@@ -158,9 +166,13 @@ async def update_user(
     :param session: This is the async session used to handle the database.
     :return: Return success if the update is done, if not 404 HTTPException.
     """
-    user_service = UserService(UserRepository(session))
-    updated_user = await user_service.update_user(username, user)
-    return updated_user
+    try:
+        user_service = UserService(UserRepository(session))
+        updated_user = await user_service.update_user(username, user)
+        return updated_user
+    except Exception as e:
+        await session.rollback()
+        raise e
 
 
 @router.delete(
@@ -187,6 +199,10 @@ async def delete_user(
     :param session: This is the async session used to handle the database.
     :return: Success message if the user is deleted, HTTPException 404 if user not found.
     """
-    user_service = UserService(UserRepository(session))
-    await user_service.delete_user(username)
-    return {"success": True, "message": f"user {username} deleted"}
+    try:
+        user_service = UserService(UserRepository(session))
+        await user_service.delete_user(username)
+        return {"success": True, "message": f"user {username} deleted"}
+    except Exception as e:
+        await session.rollback()
+        raise e

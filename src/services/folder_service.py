@@ -25,11 +25,14 @@ class FolderService:
 
         :return: The returned value is a list of folders if found.
         """
-        folders: list[Folder] | None = await self.folder_repository.get_all_folders()
-        if not folders:
-            raise HTTPException(status_code=404, detail="No folders are found")
+        try:
+            folders: list[Folder] | None = await self.folder_repository.get_all_folders()
+            if not folders:
+                raise HTTPException(status_code=404, detail="No folders are found")
 
-        return folders
+            return folders
+        except Exception as e:
+            raise e
 
     async def get_folder_by_id(self, folder_id: int) -> FolderOut | None:
         """
@@ -39,16 +42,19 @@ class FolderService:
         :param folder_id: The id of the folder to be found.
         :return: The folder's data.
         """
-        folder: Folder | None = await self.folder_repository.get_folder_by_id(folder_id)
-        if not folder:
-            raise HTTPException(status_code=404, detail=f"Folder not found")
+        try:
+            folder: Folder | None = await self.folder_repository.get_folder_by_id(folder_id)
+            if not folder:
+                raise HTTPException(status_code=404, detail=f"Folder not found")
 
-        folder_out = FolderOut(
-            id=folder.id,
-            name=folder.name,
-            parent=ParentOut(id=folder.parent.id, name=folder.parent.name)
-        )
-        return folder_out
+            folder_out = FolderOut(
+                id=folder.id,
+                name=folder.name,
+                parent=ParentOut(id=folder.parent.id, name=folder.parent.name)
+            )
+            return folder_out
+        except Exception as e:
+            raise e
 
     async def rename_folder(self, folder_id: int, name: str) -> FolderOut:
         """
@@ -58,20 +64,22 @@ class FolderService:
         :param name: New folder's name to update.
         :return: The update folder, if not found it raised 404 HTTPException.
         """
+        try:
+            stored_folder = await self.folder_repository.get_folder_by_id(folder_id)
 
-        stored_folder = await self.folder_repository.get_folder_by_id(folder_id)
+            if not stored_folder:
+                raise HTTPException(status_code=404, detail=f"Folder not found")
 
-        if not stored_folder:
-            raise HTTPException(status_code=404, detail=f"Folder not found")
+            await self.folder_repository.rename_folder(stored_folder, name)
 
-        await self.folder_repository.rename_folder(stored_folder, name)
-
-        folder_out = FolderOut(
-            id=folder.id,
-            name=folder.name,
-            parent=ParentOut(id=folder.parent.id, name=folder.parent.name)
-        )
-        return folder_out
+            folder_out = FolderOut(
+                id=stored_folder.id,
+                name=stored_folder.name,
+                parent=ParentOut(id=stored_folder.parent.id, name=stored_folder.parent.name)
+            )
+            return folder_out
+        except Exception as e:
+            raise e
 
     async def delete_folder(self, folder_id: int):
         """
@@ -81,8 +89,11 @@ class FolderService:
         :param folder_id: The id of the folder to be deleted.
         :return: True on Success, else it raised 404 HTTPException.
         """
-        await self.folder_repository.delete_folder(folder_id)
-        return True
+        try:
+            await self.folder_repository.delete_folder(folder_id)
+            return True
+        except Exception as e:
+            raise e
 
     async def create_folder(self, folder: FolderIn):
         """
@@ -91,20 +102,23 @@ class FolderService:
         :param folder: The new folder information.
         :return: The new folder created.
         """
+        try:
+            new_folder = Folder(
+                name=folder.name, parent_id=folder.parent
+            )
 
-        new_folder = Folder(
-            name=folder.name, parent_id=folder.parent
-        )
+            exists = await self.check_folder_existence(new_folder.name, new_folder.parent_id)
+            if exists:
+                raise HTTPException(status_code=409, detail="Folder already exists.")
 
-        if self.folder_repository.get_folder_by_name_parent(new_folder.name, new_folder.parent_id):
-            raise HTTPException(status_code=409, detail="Folder already exists.")
+            await self.folder_repository.create_folder(new_folder)
 
-        await self.folder_repository.create_folder(new_folder)
-
-        return {
-            "details": "Folder is added successfully",
-            "folder": {"id": new_folder.id, "title": new_folder.name},
-        }
+            return {
+                "details": "Folder is added successfully",
+                "folder": {"id": new_folder.id, "title": new_folder.name},
+            }
+        except Exception as e:
+            raise e
 
     async def get_folder_notes(self, folder_id: int) -> list[NoteOut]:
         """
@@ -113,21 +127,24 @@ class FolderService:
         :param folder_id: The id of the folder to get its notes.
         :return: Folder child notes.
         """
-        notes: list[Note] | None = await self.folder_repository.get_folder_notes(folder_id)
-        if not notes:
-            raise HTTPException(status_code=404, detail="No notes are found")
+        try:
+            notes: list[Note] | None = await self.folder_repository.get_folder_notes(folder_id)
+            if not notes:
+                raise HTTPException(status_code=404, detail="No notes are found")
 
-        return [
-            NoteOut(
-                id=note.id,
-                title=note.title,
-                content=note.content,
-                username=note.user.username,
-                parent=ParentOut(id=note.parent.id, name=note.parent.name),
-                tags=[TagOut(id=tag.id, name=tag.name) for tag in note.tags],
-            )
-            for note in notes
-        ]
+            return [
+                NoteOut(
+                    id=note.id,
+                    title=note.title,
+                    content=note.content,
+                    username=note.user.username,
+                    parent=ParentOut(id=note.parent.id, name=note.parent.name),
+                    tags=[TagOut(id=tag.id, name=tag.name) for tag in note.tags],
+                )
+                for note in notes
+            ]
+        except Exception as e:
+            raise e
 
     async def check_folder_existence(self, folder_name: str, parent_id: int) -> bool:
         """
@@ -137,7 +154,10 @@ class FolderService:
         :param parent_id: The parent folder.
         :return: If the folder exists or not.
         """
-        exist = await self.folder_repository.get_folder_by_name_parent(folder_name, parent_id)
-        if exist:
-            return True
-        return False
+        try:
+            exist = await self.folder_repository.get_folder_by_name_parent(folder_name, parent_id)
+            if exist:
+                return True
+            return False
+        except Exception as e:
+            raise e

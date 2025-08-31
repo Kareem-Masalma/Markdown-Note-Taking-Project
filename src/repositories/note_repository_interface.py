@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from src.models.note import Note
-from src.schemas.note_schema import NoteIn, NoteUpdate
+from src.schemas.note_schema import NoteUpdate
 
 
 class INoteRepository(ABC):

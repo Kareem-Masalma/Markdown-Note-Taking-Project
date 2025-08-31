@@ -1,6 +1,20 @@
 from pydantic import BaseModel, Field
 
-from src.schemas.note_schema import ChildNotes
+class ChildNotes(BaseModel):
+    """Schema of a child note for a parent folder"""
+    id: int
+    title: str
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "id": 1,
+                    "title": "Implement the project",
+                }
+            ]
+        }
+    }
 
 
 class ParentOut(BaseModel):
@@ -17,4 +31,3 @@ class FolderOut(BaseModel):
     id: int
     name: str
     parent: ParentOut
-    notes: list[ChildNotes]

@@ -23,10 +23,13 @@ class UserService:
 
         :return: The returned value is a list of users if found.
         """
-        users: list[User] | None = await self.user_repository.get_all_users()
-        if not users:
-            raise HTTPException(status_code=404, detail="No users found")
-        return users
+        try:
+            users: list[User] | None = await self.user_repository.get_all_users()
+            if not users:
+                raise HTTPException(status_code=404, detail="No users found")
+            return users
+        except Exception as e:
+            raise e
 
     async def get_user_by_username(self, username: str) -> User | None:
         """
@@ -35,11 +38,14 @@ class UserService:
         :param username: The username of the user to be found.
         :return: The user's data.
         """
-        user: User | None = await self.user_repository.get_user_by_username(username)
-        if not user:
-            raise HTTPException(status_code=404, detail=f"User {username} not found")
+        try:
+            user: User | None = await self.user_repository.get_user_by_username(username)
+            if not user:
+                raise HTTPException(status_code=404, detail=f"User {username} not found")
 
-        return user
+            return user
+        except Exception as e:
+            raise e
 
     async def update_user(self, username: str, user: UserUpdate) -> UserUpdate:
         """
@@ -50,15 +56,17 @@ class UserService:
         :param user: New user's data to update.
         :return: The update user, if not found it raised 404 HTTPException.
         """
+        try:
+            stored_user = await self.user_repository.get_user_by_username(username)
 
-        stored_user = await self.user_repository.get_user_by_username(username)
+            if not stored_user:
+                raise HTTPException(status_code=404, detail=f"User {username} not found")
 
-        if not stored_user:
-            raise HTTPException(status_code=404, detail=f"User {username} not found")
+            await self.user_repository.update_user(stored_user, user)
 
-        await self.user_repository.update_user(stored_user, user)
-
-        return user
+            return user
+        except Exception as e:
+            raise e
 
     async def delete_user(self, username: str):
         """
@@ -68,8 +76,11 @@ class UserService:
         :param username: The username of the user to be deleted.
         :return: True on Success, else it raised 404 HTTPException.
         """
-        await self.user_repository.delete_user(username)
-        return True
+        try:
+            await self.user_repository.delete_user(username)
+            return True
+        except Exception as e:
+            raise e
 
     async def login(self, logged_user: UserIn) -> dict[str, str | bool]:
         """
@@ -78,16 +89,19 @@ class UserService:
         :param logged_user: The user's data.
         :return: On success jwt token is returned.
         """
-        user = await self.get_user_by_username(logged_user.username)
-        verify = password.verify_password(logged_user.password, user.password)
-        if verify:
-            token = tokens.generate_jwt_token(user)
-            return {
-                "success": True,
-                "token": token,
-                "user": {"username": user.username, "email": user.email},
-            }
-        return {"success": False, "details": "Invalid username or password"}
+        try:
+            user = await self.get_user_by_username(logged_user.username)
+            verify = password.verify_password(logged_user.password, user.password)
+            if verify:
+                token = tokens.generate_jwt_token(user)
+                return {
+                    "success": True,
+                    "token": token,
+                    "user": {"username": user.username, "email": user.email},
+                }
+            return {"success": False, "details": "Invalid username or password"}
+        except Exception as e:
+            raise e
 
     async def register_user(self, user: UserIn):
         """
@@ -96,18 +110,21 @@ class UserService:
         :param user: The new user information.
         :return: The new user created. If the user is already exists it raises 409 HTTPException.
         """
-        hashed_password = password.hash_password(user.password)
-        exists = await self.user_repository.get_user_by_username(user.username)
-        if exists:
-            raise HTTPException(status_code=409, detail="User already exists")
+        try:
+            hashed_password = password.hash_password(user.password)
+            exists = await self.user_repository.get_user_by_username(user.username)
+            if exists:
+                raise HTTPException(status_code=409, detail="User already exists")
 
-        new_user = User(
-            username=user.username, email=user.email, password=hashed_password
-        )
+            new_user = User(
+                username=user.username, email=user.email, password=hashed_password
+            )
 
-        await self.user_repository.add_new_user(new_user)
+            await self.user_repository.add_new_user(new_user)
 
-        return {
-            "details": "user is registers",
-            "user": {"name": new_user.username, "email": new_user.email},
-        }
+            return {
+                "details": "user is registers",
+                "user": {"name": new_user.username, "email": new_user.email},
+            }
+        except Exception as e:
+            raise e

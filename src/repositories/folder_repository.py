@@ -34,13 +34,10 @@ class FolderRepository(IFolderRepository):
         query = (
             select(Folder)
             .where(Folder.deleted == 0)
-            .options(
-                selectinload(Folder.parent),
-            )
         )
         res = await self.session.execute(query)
-        notes = res.scalars().all()
-        return notes
+        folders = res.scalars().all()
+        return folders
 
     async def get_folder_by_id(self, folder_id: int) -> Folder | None:
         """
@@ -110,7 +107,6 @@ class FolderRepository(IFolderRepository):
         query = (
             select(Folder)
             .where((Folder.name == folder_name) & (Folder.parent_id == parent_id))
-            .options(selectinload(Folder.parent))
         )
         res = await self.session.execute(query)
         folder = res.scalars().first()
