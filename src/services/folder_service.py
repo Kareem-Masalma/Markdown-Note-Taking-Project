@@ -6,8 +6,11 @@ delete folder, rename folder, create folder.
 from fastapi import HTTPException
 
 from src.models.folder import Folder
+from src.models.note import Note
 from src.repositories.folder_repository import FolderRepository
 from src.schemas.folder_schema import FolderOut, FolderIn, ParentOut
+from src.schemas.note_schema import NoteOut
+from src.schemas.tag_schema import TagOut
 
 
 class FolderService:
@@ -93,9 +96,48 @@ class FolderService:
             name=folder.name, parent_id=folder.parent
         )
 
+        if self.folder_repository.get_folder_by_name_parent(new_folder.name, new_folder.parent_id):
+            raise HTTPException(status_code=409, detail="Folder already exists.")
+
         await self.folder_repository.create_folder(new_folder)
 
         return {
             "details": "Folder is added successfully",
             "folder": {"id": new_folder.id, "title": new_folder.name},
         }
+
+    async def get_folder_notes(self, folder_id: int) -> list[NoteOut]:
+        """
+        This method to get all notes that belongs to certain folder by its id.
+
+        :param folder_id: The id of the folder to get its notes.
+        :return: Folder child notes.
+        """
+        notes: list[Note] | None = await self.folder_repository.get_folder_notes(folder_id)
+        if not notes:
+            raise HTTPException(status_code=404, detail="No notes are found")
+
+        return [
+            NoteOut(
+                id=note.id,
+                title=note.title,
+                content=note.content,
+                username=note.user.username,
+                parent=ParentOut(id=note.parent.id, name=note.parent.name),
+                tags=[TagOut(id=tag.id, name=tag.name) for tag in note.tags],
+            )
+            for note in notes
+        ]
+
+    async def check_folder_existence(self, folder_name: str, parent_id: int) -> bool:
+        """
+        This method to check if a folder exists inside a certain parent.
+
+        :param folder_name: The name of the folder.
+        :param parent_id: The parent folder.
+        :return: If the folder exists or not.
+        """
+        exist = await self.folder_repository.get_folder_by_name_parent(folder_name, parent_id)
+        if exist:
+            return True
+        return False

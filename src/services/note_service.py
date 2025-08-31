@@ -126,6 +126,12 @@ class NoteService:
         }
 
     async def get_user_notes(self, user_id: int) -> list[NoteOut]:
+        """
+        This method to get all notes that belongs to certain user by their id.
+
+        :param user_id: The id of the user to get their notes.
+        :return: User notes.
+        """
         notes: list[Note] | None = await self.note_repository.get_user_notes(user_id)
         if not notes:
             raise HTTPException(status_code=404, detail="No notes are found")

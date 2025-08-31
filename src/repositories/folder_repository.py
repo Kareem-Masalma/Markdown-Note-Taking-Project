@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from src.models.folder import Folder
+from src.models.note import Note
 from src.repositories.folder_repository_interface import IFolderRepository
 
 
@@ -74,6 +75,7 @@ class FolderRepository(IFolderRepository):
     async def delete_folder(self, folder_id: int):
         """
         This method to delete a folder from the database if found.
+
         :param folder_id: The id of the folder to be deleted.
         """
         try:
@@ -83,3 +85,33 @@ class FolderRepository(IFolderRepository):
         except Exception as e:
             await self.session.rollback()
             raise e
+
+    async def get_folder_notes(self, folder_id):
+        """
+        This method to get all notes inside a folder by their parent(folder) id.
+
+        :param folder_id: The id of the folder which its children notes are requested.
+        :return: All the child notes of the folder.
+        """
+        query = (
+            select(Note)
+            .where((Note.deleted == 0) & (Note.parent_id == folder_id))
+            .options(
+                selectinload(Note.parent),
+                selectinload(Note.tags),
+                selectinload(Note.user),
+            )
+        )
+        res = await self.session.execute(query)
+        notes = res.scalars().all()
+        return notes
+
+    async def get_folder_by_name_parent(self, folder_name: str, parent_id: int):
+        query = (
+            select(Folder)
+            .where((Folder.name == folder_name) & (Folder.parent_id == parent_id))
+            .options(selectinload(Folder.parent))
+        )
+        res = await self.session.execute(query)
+        folder = res.scalars().first()
+        return folder
