@@ -16,16 +16,16 @@ tags_metadata = [
         "description": "Manage user's notes, CRUD operations, fix issues with notes, and go back to certain state of a note.",
     },
     {
+        "name": "Folders",
+        "description": "Manage folders and their subfolders and notes.",
+    },
+    {
         "name": "Render",
         "description": "Endpoint to fetch sanitized HTML derived from Markdown.",
     },
     {
         "name": "External",
         "description": "Endpoint to call api that summarizes a note or a folder.",
-    },
-    {
-        "name": "Folders",
-        "description": "Manage folders and their subfolders and notes.",
     },
 ]
 
