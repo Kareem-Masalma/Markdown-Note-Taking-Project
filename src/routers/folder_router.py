@@ -12,10 +12,19 @@ from src.services.folder_service import FolderService
 router = APIRouter()
 
 
-@router.get("/")
+@router.get("/",
+            summary="Get all folders",
+            description="This endpoint return a all folders if available inside the database",
+            response_model=list[FolderOut],
+            response_description="The list of folders",
+            responses={
+                200: {"description": "The folders requested returned successfully"},
+                404: {"description": "No folders found"},
+            },
+            status_code=status.HTTP_200_OK, )
 async def get_all_folders(
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+        user: User = Depends(check_token),
+        session: AsyncSession = Depends(Connection.get_session),
 ):
     folder_service = FolderService(FolderRepository(session))
     notes = await folder_service.get_all_folders()
@@ -35,9 +44,9 @@ async def get_all_folders(
     status_code=status.HTTP_200_OK,
 )
 async def get_folder_by_id(
-    folder_id: int,
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+        folder_id: int,
+        user: User = Depends(check_token),
+        session: AsyncSession = Depends(Connection.get_session),
 ):
     folder_service = FolderService(FolderRepository(session))
     folder = await folder_service.get_folder_by_id(folder_id)
@@ -58,9 +67,9 @@ async def get_folder_by_id(
     status_code=status.HTTP_200_OK,
 )
 async def get_folders_notes(
-    folder_id: int,
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+        folder_id: int,
+        user: User = Depends(check_token),
+        session: AsyncSession = Depends(Connection.get_session),
 ):
     folder_service = FolderService(FolderRepository(session))
     notes = folder_service.get_folder_notes(folder_id)
@@ -79,9 +88,9 @@ async def get_folders_notes(
     status_code=status.HTTP_201_CREATED,
 )
 async def create_folder(
-    folder: FolderIn,
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+        folder: FolderIn,
+        user: User = Depends(check_token),
+        session: AsyncSession = Depends(Connection.get_session),
 ):
     try:
         folder_service = FolderService(FolderRepository(session))
@@ -105,10 +114,10 @@ async def create_folder(
     status_code=status.HTTP_200_OK,
 )
 async def rename_folder(
-    folder_id: int,
-    new_name: str,
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+        folder_id: int,
+        new_name: str,
+        user: User = Depends(check_token),
+        session: AsyncSession = Depends(Connection.get_session),
 ):
     try:
         folder_service = FolderService(FolderRepository(session))
@@ -130,9 +139,9 @@ async def rename_folder(
     status_code=status.HTTP_200_OK,
 )
 async def delete_folder(
-    folder_id: int,
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+        folder_id: int,
+        user: User = Depends(check_token),
+        session: AsyncSession = Depends(Connection.get_session),
 ):
     try:
         folder_service = FolderService(FolderRepository(session))
