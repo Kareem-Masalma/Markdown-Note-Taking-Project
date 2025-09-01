@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text
+from sqlalchemy import Column, Integer, String, Text, ForeignKey
 from sqlalchemy.orm import relationship
 
 from src.common.db.connection import Connection
@@ -17,4 +17,6 @@ class Issue(Connection.get_base()):
     fixed = Column(Integer, nullable=False, default=0)
     deleted = Column(Integer, nullable=False, default=0)
 
-    revision = relationship("NoteVersion", back_populates="issues")
+    version_id = Column(Integer, ForeignKey("History.id", ondelete="CASCADE"))
+
+    history = relationship("History", back_populates="issues")
