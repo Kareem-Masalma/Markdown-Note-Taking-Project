@@ -10,6 +10,8 @@ router = APIRouter()
 
 @router.get("/note/{note_id}")
 async def get_rendered_note(
-        note_id: int, user: User = Depends(check_token), session: AsyncSession = Depends(Connection.get_session)
+    note_id: int,
+    user: User = Depends(check_token),
+    session: AsyncSession = Depends(Connection.get_session),
 ):
     pass

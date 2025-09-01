@@ -1,11 +1,10 @@
-"""Change the relationship between history and issues
+"""Change the foreign key in history
 
-Revision ID: 67cd3cda2e93
-Revises: c3d0082e58a0
-Create Date: 2025-09-01 08:49:22.350838
+Revision ID: c8787a34616d
+Revises: b54fdadc6ec0
+Create Date: 2025-09-01 10:16:39.502151
 
 """
-
 from typing import Sequence, Union
 
 from alembic import op
@@ -13,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = "67cd3cda2e93"
-down_revision: Union[str, Sequence[str], None] = "c3d0082e58a0"
+revision: str = 'c8787a34616d'
+down_revision: Union[str, Sequence[str], None] = 'b54fdadc6ec0'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

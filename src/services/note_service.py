@@ -67,7 +67,7 @@ class NoteService:
         except Exception as e:
             raise e
 
-    async def update_note(self, note_id: int, note: NoteUpdate) -> NoteOut:
+    async def update_note(self, note_id: int, note: NoteUpdate) -> Note:
         """
         This method is used to update an available note from database with deleted field set to 0,
         exclude_unset is set to be True, which removes the empty fields that aren't meant to be updated.
@@ -84,20 +84,11 @@ class NoteService:
 
             await self.note_repository.update_note(stored_note, note)
 
-            return NoteOut(
-                id=stored_note.id,
-                title=stored_note.title,
-                content=stored_note.content,
-                username=stored_note.user.username,
-                parent=ParentOut(
-                    id=stored_note.parent.id, name=stored_note.parent.name
-                ),
-                tags=[TagOut(id=tag.id, name=tag.name) for tag in stored_note.tags],
-            )
+            return stored_note
         except Exception as e:
             raise e
 
-    async def delete_note(self, note_id: int):
+    async def delete_note(self, note_id: int) -> Note | None:
         """
         This method to delete an available note from database with deleted fild set to 1, this method softly deletes the
         user, which means the note is not removed from the database, but the deleted field will be set to 1.
@@ -106,17 +97,17 @@ class NoteService:
         :return: True on Success, else it raised 404 HTTPException.
         """
         try:
-            exists = self.get_note_by_note_id(note_id)
+            exists = await self.note_repository.get_note_by_id(note_id)
 
             if not exists:
                 raise HTTPException(status_code=404, detail="Note not found.")
 
             await self.note_repository.delete_note(note_id)
-            return True
+            return exists
         except Exception as e:
             raise e
 
-    async def add_new_note(self, note: NoteIn):
+    async def add_new_note(self, note: NoteIn) -> Note | None:
         """
         This method to add new note to the database.
 
@@ -138,10 +129,7 @@ class NoteService:
                 for tag in tags:
                     await self.note_repository.add_tag_note(new_note.id, tag)
 
-            return {
-                "details": "note is added successfully",
-                "note": {"id": new_note.id, "title": new_note.title},
-            }
+            return new_note
         except Exception as e:
             raise e
 

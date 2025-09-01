@@ -18,3 +18,4 @@ class Note(Connection.get_base()):
     user = relationship("User", back_populates="notes")
     parent = relationship("Folder", back_populates="notes")
     tags = relationship("Tag", secondary=note_tags, back_populates="notes")
+    versions = relationship("History", back_populates="note")

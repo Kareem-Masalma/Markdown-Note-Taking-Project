@@ -12,8 +12,12 @@ from src.auth.tokens import check_token
 from src.common.db.connection import Connection
 from src.common.utils.generate_etag import generate_etag
 from src.models.user import User
+from src.repositories.history_repository import HistoryRepository
 from src.repositories.note_repository import NoteRepository
+from src.schemas.folder_schema import ParentOut
 from src.schemas.note_schema import NoteOut, NoteIn, NoteUpdate
+from src.schemas.tag_schema import TagOut
+from src.services.history_service import HistoryService
 from src.services.note_service import NoteService
 
 router = APIRouter()
@@ -32,8 +36,8 @@ router = APIRouter()
     status_code=status.HTTP_200_OK,
 )
 async def get_all_notes(
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+        user: User = Depends(check_token),
+        session: AsyncSession = Depends(Connection.get_session),
 ):
     """
     This method is to get all notes in the database, where deleted field is set to be 0.
@@ -61,11 +65,11 @@ async def get_all_notes(
     status_code=status.HTTP_200_OK,
 )
 async def get_note_by_id(
-    note_id: int,
-    response: Response,
-    if_none_match: str | None = Header(default=None),
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+        note_id: int,
+        response: Response,
+        if_none_match: str | None = Header(default=None),
+        user: User = Depends(check_token),
+        session: AsyncSession = Depends(Connection.get_session),
 ):
     """
     This method to get a note by its id.
@@ -101,9 +105,9 @@ async def get_note_by_id(
     status_code=status.HTTP_200_OK,
 )
 async def get_users_notes(
-    user_id: int,
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+        user_id: int,
+        user: User = Depends(check_token),
+        session: AsyncSession = Depends(Connection.get_session),
 ):
     """
     This endpoint get all the user's notes available in the database with deleted field set to 0.
@@ -122,7 +126,6 @@ async def get_users_notes(
     "/history/{note_id}",
     summary="Get note's history  by its id",
     description="This endpoint returns note's history if available inside the database",
-    response_model=list[NoteOut],
     response_description="The returned data is the history of a note",
     responses={
         200: {"description": "All note's history is returned successfully"},
@@ -131,9 +134,9 @@ async def get_users_notes(
     status_code=status.HTTP_200_OK,
 )
 async def get_note_history(
-    note_id: int,
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+        note_id: int,
+        user: User = Depends(check_token),
+        session: AsyncSession = Depends(Connection.get_session),
 ):
     """
     This endpoint to get the history and all the previous versions of a certain note.
@@ -143,14 +146,15 @@ async def get_note_history(
     :param session: This is the async session used to handle the database.
     :return: The history of the note.
     """
-    pass
+    history_service = HistoryService(HistoryRepository(session))
+    versions = await history_service.get_note_versions(note_id)
+    return versions
 
 
 @router.get(
-    "/history/{note_id}/{history_id}",
+    "/version/{version_id}",
     summary="Get note's version",
     description="This endpoint return a version of a note if available inside the database",
-    response_model=NoteOut,
     response_description="The returned data is a version of a note",
     responses={
         200: {"description": "The requested note's history returned successfully"},
@@ -159,21 +163,21 @@ async def get_note_history(
     status_code=status.HTTP_200_OK,
 )
 async def get_note_old_version(
-    note_id: int,
-    history_id: int,
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+        version_id: int,
+        user: User = Depends(check_token),
+        session: AsyncSession = Depends(Connection.get_session),
 ):
     """
     This endpoint returns a certain version of a note from its history.
 
-    :param note_id: The id of the note to be found.
-    :param history_id: The id of the version to be found.
+    :param version_id: The id of the version to be found.
     :param user: Check if the user is authorized to use the endpoint by checking the jwt token sent in the header.
     :param session: This is the async session used to handle the database.
     :return: A certain version of a certain note.
     """
-    pass
+    history_service = HistoryService(HistoryRepository(session))
+    version = await history_service.get_version_by_id(version_id)
+    return version
 
 
 @router.post(
@@ -187,9 +191,9 @@ async def get_note_old_version(
     status_code=status.HTTP_201_CREATED,
 )
 async def add_new_note(
-    note: NoteIn,
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+        note: NoteIn,
+        user: User = Depends(check_token),
+        session: AsyncSession = Depends(Connection.get_session),
 ):
     """
     This method adds new note to the database.
@@ -202,6 +206,10 @@ async def add_new_note(
     try:
         note_service = NoteService(NoteRepository(session))
         note = await note_service.add_new_note(note)
+        history_service = HistoryService(HistoryRepository(session))
+        await history_service.create_new_history_version(
+            note, f"Note created: {note.id}, {note.title}"
+        )
         return note
     except Exception as e:
         await session.rollback()
@@ -221,10 +229,10 @@ async def add_new_note(
     status_code=status.HTTP_200_OK,
 )
 async def update_note(
-    note_id: int,
-    note: NoteUpdate,
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+        note_id: int,
+        note: NoteUpdate,
+        user: User = Depends(check_token),
+        session: AsyncSession = Depends(Connection.get_session),
 ):
     """
     This endpoint to update available note's data, the note shall be available if not HTTPException 404 is raised.
@@ -238,7 +246,16 @@ async def update_note(
     try:
         note_service = NoteService(NoteRepository(session))
         note = await note_service.update_note(note_id, note)
-        return note
+        history_service = HistoryService(HistoryRepository(session))
+        await history_service.create_new_history_version(note, f"Note updated")
+        return NoteOut(
+            id=note.id,
+            title=note.title,
+            content=note.content,
+            username=note.user.username,
+            parent=ParentOut(id=note.parent.id, name=note.parent.name),
+            tags=[TagOut(id=tag.id, name=tag.name) for tag in note.tags],
+        )
     except Exception as e:
         await session.rollback()
         raise e
@@ -256,9 +273,9 @@ async def update_note(
     status_code=status.HTTP_200_OK,
 )
 async def delete_note(
-    note_id: int,
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+        note_id: int,
+        user: User = Depends(check_token),
+        session: AsyncSession = Depends(Connection.get_session),
 ):
     """
     This method to delete a note from the database if available, else it raises a 404 HTTPException.
@@ -270,7 +287,9 @@ async def delete_note(
     """
     try:
         note_service = NoteService(NoteRepository(session))
-        return await note_service.delete_note(note_id)
+        note = await note_service.delete_note(note_id)
+        history_service = HistoryService(HistoryRepository(session))
+        await history_service.create_new_history_version(note, f"Note deleted")
     except Exception as e:
         await session.rollback()
         raise e
