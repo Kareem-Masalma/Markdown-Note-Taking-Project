@@ -12,10 +12,11 @@ router = APIRouter()
 
 @router.get("/note/{note_id}")
 async def get_rendered_note(
-        note_id: int, response: Response,
-        if_none_match: str | None = Header(default=None),
-        user: User = Depends(check_token),
-        session: AsyncSession = Depends(Connection.get_session),
+    note_id: int,
+    response: Response,
+    if_none_match: str | None = Header(default=None),
+    user: User = Depends(check_token),
+    session: AsyncSession = Depends(Connection.get_session),
 ):
     render_service = RenderService(NoteRepository(session))
 

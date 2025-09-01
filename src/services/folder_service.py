@@ -26,9 +26,7 @@ class FolderService:
         :return: The returned value is a list of folders if found.
         """
         try:
-            folders: list[Folder] | None = (
-                await self.folder_repository.get_all()
-            )
+            folders: list[Folder] | None = await self.folder_repository.get_all()
             if not folders:
                 raise HTTPException(status_code=404, detail="No folders are found")
 
@@ -45,9 +43,7 @@ class FolderService:
         :return: The folder's data.
         """
         try:
-            folder: Folder | None = await self.folder_repository.get_by_id(
-                folder_id
-            )
+            folder: Folder | None = await self.folder_repository.get_by_id(folder_id)
             if not folder:
                 raise HTTPException(status_code=404, detail=f"Folder not found")
 

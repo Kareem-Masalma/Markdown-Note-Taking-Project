@@ -21,4 +21,3 @@ class LanguageToolService:
         response = grammar_checker.check_text(content)
 
         return response
-
