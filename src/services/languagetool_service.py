@@ -18,6 +18,6 @@ class LanguageToolService:
 
         content = version.note_content
         grammar_checker = GrammarChecker()
-        response = grammar_checker.check_text(content)
+        response = await grammar_checker.check_text(content)
 
         return response

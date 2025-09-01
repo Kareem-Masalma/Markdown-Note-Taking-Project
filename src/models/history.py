@@ -18,6 +18,8 @@ class History(Connection.get_base()):
     note_content = Column(Text, nullable=False, default="")
     created_at = Column(DateTime, default=datetime.utcnow)
 
+    deleted = Column(Integer, nullable=False, server_default="0")
+
     issues = relationship(
         "Issue", back_populates="history", cascade="all, delete-orphan"
     )

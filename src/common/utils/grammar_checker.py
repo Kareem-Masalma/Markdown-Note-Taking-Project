@@ -37,7 +37,7 @@ class GrammarChecker:
                     "context": match["context"]["text"],
                     "offset": match["offset"],
                     "length": match["length"],
-                    "suggestions": [r["value"] for r in match.get("replacements", [])],
+                    "suggestions": ([r["value"] for r in match.get("replacements", [])])[0],
                     "category": match.get("rule", {}).get("category", {}).get("name"),
                     "type": match.get("rule", {}).get("issueType"),
                 }
