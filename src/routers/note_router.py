@@ -15,6 +15,7 @@ from src.models.user import User
 from src.repositories.history_repository import HistoryRepository
 from src.repositories.note_repository import NoteRepository
 from src.schemas.folder_schema import ParentOut
+from src.schemas.history_schema import HistoryOut
 from src.schemas.note_schema import NoteOut, NoteIn, NoteUpdate
 from src.schemas.tag_schema import TagOut
 from src.services.history_service import HistoryService
@@ -36,8 +37,8 @@ router = APIRouter()
     status_code=status.HTTP_200_OK,
 )
 async def get_all_notes(
-        user: User = Depends(check_token),
-        session: AsyncSession = Depends(Connection.get_session),
+    user: User = Depends(check_token),
+    session: AsyncSession = Depends(Connection.get_session),
 ):
     """
     This method is to get all notes in the database, where deleted field is set to be 0.
@@ -65,11 +66,11 @@ async def get_all_notes(
     status_code=status.HTTP_200_OK,
 )
 async def get_note_by_id(
-        note_id: int,
-        response: Response,
-        if_none_match: str | None = Header(default=None),
-        user: User = Depends(check_token),
-        session: AsyncSession = Depends(Connection.get_session),
+    note_id: int,
+    response: Response,
+    if_none_match: str | None = Header(default=None),
+    user: User = Depends(check_token),
+    session: AsyncSession = Depends(Connection.get_session),
 ):
     """
     This method to get a note by its id.
@@ -105,9 +106,9 @@ async def get_note_by_id(
     status_code=status.HTTP_200_OK,
 )
 async def get_users_notes(
-        user_id: int,
-        user: User = Depends(check_token),
-        session: AsyncSession = Depends(Connection.get_session),
+    user_id: int,
+    user: User = Depends(check_token),
+    session: AsyncSession = Depends(Connection.get_session),
 ):
     """
     This endpoint get all the user's notes available in the database with deleted field set to 0.
@@ -126,6 +127,7 @@ async def get_users_notes(
     "/history/{note_id}",
     summary="Get note's history  by its id",
     description="This endpoint returns note's history if available inside the database",
+    response_model=list[HistoryOut],
     response_description="The returned data is the history of a note",
     responses={
         200: {"description": "All note's history is returned successfully"},
@@ -134,9 +136,9 @@ async def get_users_notes(
     status_code=status.HTTP_200_OK,
 )
 async def get_note_history(
-        note_id: int,
-        user: User = Depends(check_token),
-        session: AsyncSession = Depends(Connection.get_session),
+    note_id: int,
+    user: User = Depends(check_token),
+    session: AsyncSession = Depends(Connection.get_session),
 ):
     """
     This endpoint to get the history and all the previous versions of a certain note.
@@ -155,6 +157,7 @@ async def get_note_history(
     "/version/{version_id}",
     summary="Get note's version",
     description="This endpoint return a version of a note if available inside the database",
+    response_model=HistoryOut,
     response_description="The returned data is a version of a note",
     responses={
         200: {"description": "The requested note's history returned successfully"},
@@ -163,9 +166,9 @@ async def get_note_history(
     status_code=status.HTTP_200_OK,
 )
 async def get_note_old_version(
-        version_id: int,
-        user: User = Depends(check_token),
-        session: AsyncSession = Depends(Connection.get_session),
+    version_id: int,
+    user: User = Depends(check_token),
+    session: AsyncSession = Depends(Connection.get_session),
 ):
     """
     This endpoint returns a certain version of a note from its history.
@@ -191,9 +194,9 @@ async def get_note_old_version(
     status_code=status.HTTP_201_CREATED,
 )
 async def add_new_note(
-        note: NoteIn,
-        user: User = Depends(check_token),
-        session: AsyncSession = Depends(Connection.get_session),
+    note: NoteIn,
+    user: User = Depends(check_token),
+    session: AsyncSession = Depends(Connection.get_session),
 ):
     """
     This method adds new note to the database.
@@ -229,10 +232,10 @@ async def add_new_note(
     status_code=status.HTTP_200_OK,
 )
 async def update_note(
-        note_id: int,
-        note: NoteUpdate,
-        user: User = Depends(check_token),
-        session: AsyncSession = Depends(Connection.get_session),
+    note_id: int,
+    note: NoteUpdate,
+    user: User = Depends(check_token),
+    session: AsyncSession = Depends(Connection.get_session),
 ):
     """
     This endpoint to update available note's data, the note shall be available if not HTTPException 404 is raised.
@@ -273,9 +276,9 @@ async def update_note(
     status_code=status.HTTP_200_OK,
 )
 async def delete_note(
-        note_id: int,
-        user: User = Depends(check_token),
-        session: AsyncSession = Depends(Connection.get_session),
+    note_id: int,
+    user: User = Depends(check_token),
+    session: AsyncSession = Depends(Connection.get_session),
 ):
     """
     This method to delete a note from the database if available, else it raises a 404 HTTPException.

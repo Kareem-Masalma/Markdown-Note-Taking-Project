@@ -7,6 +7,7 @@ from src.common.db.connection import Connection
 from src.models.issue import Issue
 from src.models.note import Note
 
+
 class History(Connection.get_base()):
     __tablename__ = "History"
 
@@ -22,4 +23,3 @@ class History(Connection.get_base()):
     )
 
     note = relationship("Note", back_populates="versions")
-
