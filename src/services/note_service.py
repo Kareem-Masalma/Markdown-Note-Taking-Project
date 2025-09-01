@@ -25,7 +25,7 @@ class NoteService:
         :return: The returned value is a list of notes if found.
         """
         try:
-            notes: list[Note] | None = await self.note_repository.get_all_notes()
+            notes: list[Note] | None = await self.note_repository.get_all()
             if not notes:
                 raise HTTPException(status_code=404, detail="No notes are found")
 
@@ -51,7 +51,7 @@ class NoteService:
         :return: The note's data.
         """
         try:
-            note: Note | None = await self.note_repository.get_note_by_id(note_id)
+            note: Note | None = await self.note_repository.get_by_id(note_id)
             if not note:
                 raise HTTPException(status_code=404, detail=f"Note {note_id} not found")
 
@@ -77,7 +77,7 @@ class NoteService:
         :return: The update note, if not found it raised 404 HTTPException.
         """
         try:
-            stored_note = await self.note_repository.get_note_by_id(note_id)
+            stored_note = await self.note_repository.get_by_id(note_id)
 
             if not stored_note:
                 raise HTTPException(status_code=404, detail=f"Note {note_id} not found")
@@ -97,12 +97,12 @@ class NoteService:
         :return: True on Success, else it raised 404 HTTPException.
         """
         try:
-            exists = await self.note_repository.get_note_by_id(note_id)
+            exists = await self.note_repository.get_by_id(note_id)
 
             if not exists:
                 raise HTTPException(status_code=404, detail="Note not found.")
 
-            await self.note_repository.delete_note(note_id)
+            await self.note_repository.delete(note_id)
             return exists
         except Exception as e:
             raise e
@@ -122,7 +122,7 @@ class NoteService:
                 parent_id=note.parent_id,
             )
 
-            await self.note_repository.add_new_note(new_note)
+            await self.note_repository.create(new_note)
 
             tags = note.tag_ids
             if tags:

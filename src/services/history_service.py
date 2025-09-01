@@ -17,7 +17,7 @@ class HistoryService:
                 note_content=note.content,
                 rev_description=message,
             )
-            await self.history_repository.create_new_history_version(history)
+            await self.history_repository.create(history)
             return history
         except Exception as e:
             raise e

@@ -27,7 +27,7 @@ class FolderService:
         """
         try:
             folders: list[Folder] | None = (
-                await self.folder_repository.get_all_folders()
+                await self.folder_repository.get_all()
             )
             if not folders:
                 raise HTTPException(status_code=404, detail="No folders are found")
@@ -45,7 +45,7 @@ class FolderService:
         :return: The folder's data.
         """
         try:
-            folder: Folder | None = await self.folder_repository.get_folder_by_id(
+            folder: Folder | None = await self.folder_repository.get_by_id(
                 folder_id
             )
             if not folder:
@@ -69,7 +69,7 @@ class FolderService:
         :return: The update folder, if not found it raised 404 HTTPException.
         """
         try:
-            stored_folder = await self.folder_repository.get_folder_by_id(folder_id)
+            stored_folder = await self.folder_repository.get_by_id(folder_id)
 
             if not stored_folder:
                 raise HTTPException(status_code=404, detail=f"Folder not found")
@@ -101,7 +101,7 @@ class FolderService:
             if not exists:
                 raise HTTPException(status_code=404, detail="Folder doesn't exists.")
 
-            await self.folder_repository.delete_folder(folder_id)
+            await self.folder_repository.delete(folder_id)
             return True
         except Exception as e:
             raise e
@@ -122,7 +122,7 @@ class FolderService:
             if exists:
                 raise HTTPException(status_code=409, detail="Folder already exists.")
 
-            await self.folder_repository.create_folder(new_folder)
+            await self.folder_repository.create(new_folder)
 
             return {
                 "details": "Folder is added successfully",

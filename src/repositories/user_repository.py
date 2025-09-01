@@ -6,11 +6,10 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models.user import User
-from src.repositories.user_repository_interface import IUserRepository
 from src.schemas.user_schema import UserUpdate
 
 
-class UserRepository(IUserRepository):
+class UserRepository:
 
     def __init__(self, session: AsyncSession):
         self.session = session

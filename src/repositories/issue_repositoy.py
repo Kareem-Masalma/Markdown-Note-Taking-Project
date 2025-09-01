@@ -1,35 +1,19 @@
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
 from src.models.issue import Issue
+from src.repositories.base_repository import BaseRepository
 
 
-class IssueRepository:
+class IssueRepository(BaseRepository[Issue]):
     def __init__(self, session: AsyncSession):
-        self.session = session
+        super().__init__(session, Issue)
 
-    async def create_new_issue(self, issue: Issue):
-        try:
-            self.session.add(issue)
-            await self.session.commit()
+    async def get_issue_by_id(self, issue_id: int) -> Issue | None:
+        return await self.get_by_id(issue_id)
 
-        except Exception as e:
-            raise e
-
-    async def get_issue_by_id(self, issue_id: int):
-        try:
-            query = select(Issue).where(Issue.id == issue_id)
-            res = await self.session.execute(query)
-            issue: Issue = res.scalars().first()
-
-        except Exception as e:
-            raise e
-
-    async def get_version_issues(self, version_id):
-        try:
-            query = select(Issue).where(Issue.version_id == version_id)
-            res = await self.session.execute(query)
-            issue: Issue = res.scalars().first()
-
-        except Exception as e:
-            raise e
+    async def get_version_issues(self, version_id: int) -> list[Issue]:
+        res = await self.session.execute(
+            select(Issue).where(Issue.version_id == version_id)
+        )
+        return res.scalars().all()

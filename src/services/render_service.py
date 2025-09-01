@@ -12,7 +12,7 @@ class RenderService:
 
     async def render(self, if_none_match, response: Response, note_id: int):
         try:
-            note: Note = await self.note_repository.get_note_by_id(note_id)
+            note: Note = await self.note_repository.get_by_id(note_id)
 
             if not note:
                 raise HTTPException(status_code=404, detail="Note not found")

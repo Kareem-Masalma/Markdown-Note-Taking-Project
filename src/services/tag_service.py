@@ -22,7 +22,7 @@ class TagService:
             raise HTTPException(status_code=409, detail="Folder already exists.")
 
         new_tag: Tag = Tag(name=tag.name)
-        await self.tag_repository.create_tag(new_tag)
+        await self.tag_repository.create(new_tag)
 
         return {
             "details": "Folder is added successfully",
@@ -35,7 +35,7 @@ class TagService:
 
         :return: All tags in database.
         """
-        tags: list[Tag] = await self.tag_repository.get_all_tags()
+        tags: list[Tag] = await self.tag_repository.get_all()
         if not tags:
             raise HTTPException(status_code=404, detail="No tags found.")
         return tags
@@ -48,7 +48,7 @@ class TagService:
         :return: The tag.
         """
 
-        tag: Tag = await self.tag_repository.get_tag_by_id(tag_id)
+        tag: Tag = await self.tag_repository.get_by_id(tag_id)
         if not tag:
             raise HTTPException(status_code=404, detail="Tag not found.")
         return tag
@@ -75,7 +75,7 @@ class TagService:
         :return: The new tag.
         """
         try:
-            stored_tag = await self.tag_repository.get_tag_by_id(tag_id)
+            stored_tag = await self.tag_repository.get_by_id(tag_id)
 
             if not stored_tag:
                 raise HTTPException(status_code=404, detail="Tag not found")
@@ -100,7 +100,7 @@ class TagService:
             if not exists:
                 raise HTTPException(status_code=404, detail="Tag not found.")
 
-            await self.tag_repository.delete_tag(tag_id)
+            await self.tag_repository.delete(tag_id)
             return True
         except Exception as e:
             raise e
