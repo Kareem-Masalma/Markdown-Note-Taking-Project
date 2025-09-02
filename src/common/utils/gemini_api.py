@@ -19,5 +19,4 @@ async def send_to_gemini(prompt: str):
         ),
     )
 
-
     return response

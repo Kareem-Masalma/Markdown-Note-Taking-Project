@@ -10,17 +10,21 @@ from src.services.summarize_notes_service import SummarizeNotes
 router = APIRouter()
 
 
-@router.get("/summ/note/{note_id}",
-            summary="Summarize note",
-            description="This endpoint summarize note using gemini api.",
-            response_description="The returned data is the summarized note",
-            responses={
-                200: {"description": "The note successfully summarized"},
-                404: {"description": "Note is not found"},
-            },
-            status_code=status.HTTP_200_OK, )
+@router.get(
+    "/summ/note/{note_id}",
+    summary="Summarize note",
+    description="This endpoint summarize note using gemini api.",
+    response_description="The returned data is the summarized note",
+    responses={
+        200: {"description": "The note successfully summarized"},
+        404: {"description": "Note is not found"},
+    },
+    status_code=status.HTTP_200_OK,
+)
 async def get_note_summary(
-        note_id: int, user: User = Depends(check_token), session: AsyncSession = Depends(Connection.get_session)
+    note_id: int,
+    user: User = Depends(check_token),
+    session: AsyncSession = Depends(Connection.get_session),
 ):
     summarize_service = SummarizeNotes(NoteRepository(session))
 

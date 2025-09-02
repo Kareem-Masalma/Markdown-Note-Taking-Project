@@ -11,6 +11,10 @@ class IssueRepository(BaseRepository[Issue]):
 
     async def get_version_issues(self, version_id: int) -> list[Issue]:
         res = await self.session.execute(
-            select(Issue).where(Issue.version_id == version_id)
+            select(Issue).where((Issue.version_id == version_id) & (Issue.fixed == 0))
         )
         return res.scalars().all()
+
+    async def update_issue(self, issue: Issue):
+        await self.session.commit()
+        await self.session.refresh(issue)

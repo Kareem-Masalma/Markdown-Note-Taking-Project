@@ -2,6 +2,7 @@
 This module is the methods used to handle notes endpoint operations, get note by id, get all notes,
 delete note, update note, add new note.
 """
+
 import json
 
 from fastapi import HTTPException
@@ -62,7 +63,9 @@ class NoteService:
                 )
                 for note in notes
             ]
-            await write_on_cache(ALL_NOTES_REDIS_KEY, json.dumps([note.dict() for note in notes_out]))
+            await write_on_cache(
+                ALL_NOTES_REDIS_KEY, json.dumps([note.dict() for note in notes_out])
+            )
 
             return notes_out
         except Exception as e:
@@ -97,7 +100,9 @@ class NoteService:
                 tags=[TagOut(id=tag.id, name=tag.name) for tag in note.tags],
             )
 
-            await write_on_cache(NOTE_ID_REDIS_KEY + f"/{note_id}", json.dumps(note_out.dict()))
+            await write_on_cache(
+                NOTE_ID_REDIS_KEY + f"/{note_id}", json.dumps(note_out.dict())
+            )
 
             return note_out
         except Exception as e:

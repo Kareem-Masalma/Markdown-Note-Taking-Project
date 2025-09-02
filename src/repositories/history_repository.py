@@ -17,3 +17,7 @@ class HistoryRepository(BaseRepository[History]):
             select(History).where(History.note_id == note_id)
         )
         return res.scalars().all()
+
+    async def update_version(self, version: History):
+        await self.session.commit()
+        await self.session.refresh(version)

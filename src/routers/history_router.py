@@ -3,10 +3,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.tokens import check_token
 from src.common.db.connection import Connection
+from src.models.issue import Issue
 from src.models.user import User
 from src.repositories.history_repository import HistoryRepository
+from src.repositories.issue_repositoy import IssueRepository
 from src.schemas.history_schema import HistoryOut
 from src.services.history_service import HistoryService
+from src.services.issue_service import IssueService
 
 router = APIRouter()
 
@@ -69,3 +72,32 @@ async def get_note_old_version(
     history_service = HistoryService(HistoryRepository(session))
     version = await history_service.get_version_by_id(version_id)
     return version
+
+
+@router.get(
+    "/version/issues/{issue_id}",
+    summary="Get version's issues",
+    description="This endpoint returns the issues of a version from database if found",
+    response_description="The returned data is the issues of a version",
+    responses={
+        200: {"description": "The requested note's history returned successfully"},
+        404: {"description": "Note is not found"},
+    },
+    status_code=status.HTTP_200_OK,
+)
+async def get_version_issues(
+    version_id: int,
+    user: User = Depends(check_token),
+    session: AsyncSession = Depends(Connection.get_session),
+):
+    """
+    This endpoint returns issues of a certain version.
+
+    :param version_id: The id of the version to be found.
+    :param user: Check if the user is authorized to use the endpoint by checking the jwt token sent in the header.
+    :param session: This is the async session used to handle the database.
+    :return: A certain version of a certain note.
+    """
+    issue_service = IssueService(IssueRepository(session))
+    issues: list[Issue] = await issue_service.version_issues(version_id)
+    return issues

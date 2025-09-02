@@ -39,25 +39,18 @@ class SummarizeNotes:
 
             res = await check_cache(SUMMARY_KEY)
             if res:
-                return {
-                    'note': {
-                        'id': note.id,
-                        'title': note.title
-                    },
-                    "summary": res
-                }
+                return {"note": {"id": note.id, "title": note.title}, "summary": res}
 
-            response = await send_to_gemini(f"Summarize this note in a few sentences:\n\n{note.content}")
+            response = await send_to_gemini(
+                f"Summarize this note in a few sentences:\n\n{note.content}"
+            )
             summarization = response.candidates[0].content.parts[0].text
 
             await write_on_cache(SUMMARY_KEY, summarization)
 
             return {
-                'note': {
-                    'id': note.id,
-                    'title': note.title
-                },
-                "summary": summarization
+                "note": {"id": note.id, "title": note.title},
+                "summary": summarization,
             }
         except Exception as e:
             raise e
