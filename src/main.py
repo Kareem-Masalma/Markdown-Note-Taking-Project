@@ -56,7 +56,7 @@ app.include_router(folder_router, prefix="/folder", tags=["Folders"])
 app.include_router(tag_router, prefix="/tag", tags=["Tags"])
 app.include_router(grammar_router, prefix="/tag", tags=["Grammar"])
 app.include_router(render_router, prefix="/render", tags=["Render"])
-app.include_router(summarization_router, prefix="/summ", tags=["External"])
+app.include_router(summarization_router, prefix="/ext", tags=["External"])
 
 
 @app.get("/")

@@ -77,7 +77,7 @@ class NoteService:
         """
         try:
 
-            res = await check_cache(NOTE_ID_REDIS_KEY)
+            res = await check_cache(NOTE_ID_REDIS_KEY + f"/{note_id}")
 
             if res:
                 res_note = json.loads(res)
@@ -97,7 +97,7 @@ class NoteService:
                 tags=[TagOut(id=tag.id, name=tag.name) for tag in note.tags],
             )
 
-            await write_on_cache(NOTE_ID_REDIS_KEY, json.dumps(note_out.dict()))
+            await write_on_cache(NOTE_ID_REDIS_KEY + f"/{note_id}", json.dumps(note_out.dict()))
 
             return note_out
         except Exception as e:

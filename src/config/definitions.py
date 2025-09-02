@@ -4,3 +4,4 @@ ALGO = "HS256"
 
 ALL_NOTES_REDIS_KEY = "/notes/all"
 NOTE_ID_REDIS_KEY = "/note/id"
+SUMMARY_KEY = "/summary"

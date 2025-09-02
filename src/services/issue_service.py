@@ -9,6 +9,12 @@ class IssueService:
         self.issue_repository = issue_repository
 
     async def create_issue(self, issue: Dict[str, Any]):
+        """
+        This method create an issue to the database.
+
+        :param issue: The issue to add.
+        :return: The added issue.
+        """
         try:
             issue = Issue(context=issue['context'], offset=issue['offset'], length=issue['length'],
                           error_message=issue['message'],

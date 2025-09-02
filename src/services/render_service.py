@@ -11,6 +11,14 @@ class RenderService:
         self.note_repository = note_repository
 
     async def render(self, if_none_match, response: Response, note_id: int):
+        """
+        This method to render a Markdown text to a sanitized HTML code.
+
+        :param if_none_match: Etag to check of the note is modified.
+        :param response: The response to get the etag.
+        :param note_id: The id of the note to render.
+        :return: The rendered text.
+        """
         try:
             note: Note = await self.note_repository.get_by_id(note_id)
 

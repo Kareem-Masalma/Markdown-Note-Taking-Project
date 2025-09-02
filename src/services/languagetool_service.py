@@ -11,6 +11,12 @@ class LanguageToolService:
         self.history_repository = history_repository
 
     async def check_grammar(self, version_id: int):
+        """
+        This method checks the grammar of a specific version of a note if found.
+
+        :param version_id: The id of the version to check.
+        :return: The issues found with the version.
+        """
         version: History = await self.history_repository.get_version_by_id(version_id)
 
         if not version:
