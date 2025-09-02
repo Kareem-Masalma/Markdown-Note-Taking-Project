@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Response, Header
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.tokens import check_token
@@ -6,10 +6,8 @@ from src.common.db.connection import Connection
 from src.models.user import User
 from src.repositories.history_repository import HistoryRepository
 from src.repositories.issue_repositoy import IssueRepository
-from src.repositories.note_repository import NoteRepository
 from src.services.issue_service import IssueService
 from src.services.languagetool_service import LanguageToolService
-from src.services.render_service import RenderService
 
 router = APIRouter()
 

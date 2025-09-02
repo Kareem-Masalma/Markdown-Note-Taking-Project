@@ -21,3 +21,5 @@ DB_URL = (
 
 REDIS_HOST = os.getenv("REDIS_HOST", "redis")
 REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
