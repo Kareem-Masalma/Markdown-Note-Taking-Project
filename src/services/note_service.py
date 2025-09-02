@@ -2,6 +2,7 @@
 This module is the methods used to handle notes endpoint operations, get note by id, get all notes,
 delete note, update note, add new note.
 """
+import json
 
 from fastapi import HTTPException
 
@@ -10,6 +11,19 @@ from src.repositories.note_repository import NoteRepository
 from src.schemas.folder_schema import ParentOut
 from src.schemas.note_schema import NoteUpdate, NoteIn, NoteOut
 from src.schemas.tag_schema import TagOut
+from src.services.redis_caching import RedisCache
+from src.config.definitions import NOTE_ID_REDIS_KEY, ALL_NOTES_REDIS_KEY
+
+redis_service = RedisCache()
+
+
+async def check_cache(key: str):
+    res = await redis_service.get(key)
+    return res
+
+
+async def write_on_cache(key: str, value: str, expire: int = 300):
+    await redis_service.set(key, value, expire)
 
 
 class NoteService:
@@ -25,11 +39,19 @@ class NoteService:
         :return: The returned value is a list of notes if found.
         """
         try:
+
+            res = await check_cache(ALL_NOTES_REDIS_KEY)
+
+            if res:
+                notes = json.loads(res)
+                notes_out = [NoteOut(**note) for note in notes]
+                return notes_out
+
             notes: list[Note] | None = await self.note_repository.get_all()
             if not notes:
                 raise HTTPException(status_code=404, detail="No notes are found")
 
-            return [
+            notes_out = [
                 NoteOut(
                     id=note.id,
                     title=note.title,
@@ -40,6 +62,9 @@ class NoteService:
                 )
                 for note in notes
             ]
+            await write_on_cache(ALL_NOTES_REDIS_KEY, json.dumps([note.dict() for note in notes_out]))
+
+            return notes_out
         except Exception as e:
             raise e
 
@@ -51,6 +76,14 @@ class NoteService:
         :return: The note's data.
         """
         try:
+
+            res = await check_cache(NOTE_ID_REDIS_KEY)
+
+            if res:
+                res_note = json.loads(res)
+                notes_out = NoteOut(**res_note)
+                return notes_out
+
             note: Note | None = await self.note_repository.get_by_id(note_id)
             if not note:
                 raise HTTPException(status_code=404, detail=f"Note {note_id} not found")
@@ -63,6 +96,9 @@ class NoteService:
                 parent=ParentOut(id=note.parent.id, name=note.parent.name),
                 tags=[TagOut(id=tag.id, name=tag.name) for tag in note.tags],
             )
+
+            await write_on_cache(NOTE_ID_REDIS_KEY, json.dumps(note_out.dict()))
+
             return note_out
         except Exception as e:
             raise e
