@@ -1,7 +1,7 @@
 """
 This module is used to render any Markdown text to an HTML format using markdown library.
 """
-
+from bs4 import BeautifulSoup
 from markdown import markdown
 
 
@@ -13,4 +13,6 @@ def render_markdown_to_html(markdown_text: str) -> str:
     :return: The rendered HTML text.
     """
     html = markdown(markdown_text)
-    return html
+    soup = BeautifulSoup(html, "html.parser")
+    plain_text = soup.get_text()
+    return plain_text
