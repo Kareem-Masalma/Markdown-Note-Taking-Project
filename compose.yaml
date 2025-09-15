@@ -7,7 +7,12 @@ services:
       - .env
     depends_on:
       - db
+  web:
+    build: .
+    depends_on:
       - redis
+    environment:
+      REDIS_URL: redis://redis:6379/0
 
   db:
     image: postgres:17

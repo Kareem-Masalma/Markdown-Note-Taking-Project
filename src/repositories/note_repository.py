@@ -1,5 +1,5 @@
 from typing import List, Optional
-from sqlalchemy import insert, select
+from sqlalchemy import insert, select, update
 from sqlalchemy.orm import selectinload
 
 from src.models.note import Note
@@ -69,5 +69,14 @@ class NoteRepository(BaseRepository[Note]):
 
     async def add_tag_note(self, note_id: int, tag_id: int) -> None:
         stmt = insert(note_tags).values(note_id=note_id, tag_id=tag_id)
+        await self.session.execute(stmt)
+        await self.session.commit()
+
+    async def delete_folder_notes(self, folder_id: int):
+        stmt = (
+            update(Note)
+            .where(Note.parent_id == folder_id)
+            .values(deleted=1)
+        )
         await self.session.execute(stmt)
         await self.session.commit()

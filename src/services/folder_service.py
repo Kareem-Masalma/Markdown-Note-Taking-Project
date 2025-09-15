@@ -8,6 +8,7 @@ from fastapi import HTTPException
 from src.models.folder import Folder
 from src.models.note import Note
 from src.repositories.folder_repository import FolderRepository
+from src.repositories.note_repository import NoteRepository
 from src.schemas.folder_schema import FolderOut, FolderIn, ParentOut
 from src.schemas.note_schema import NoteOut
 from src.schemas.tag_schema import TagOut
@@ -98,6 +99,8 @@ class FolderService:
                 raise HTTPException(status_code=404, detail="Folder doesn't exists.")
 
             await self.folder_repository.delete(folder_id)
+            note_repo = NoteRepository(self.folder_repository.session)
+            await note_repo.delete_folder_notes(folder_id)
             return True
         except Exception as e:
             raise e
