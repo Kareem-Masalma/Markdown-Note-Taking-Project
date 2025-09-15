@@ -28,6 +28,13 @@ It supports organizing notes in nested folders, version history, and real-time c
 
 ---
 
+## 🗄️ Database Schema (ERD)
+
+The ERD showing the relationships between entities:  
+[📊 View ERD](https://drive.google.com/file/d/1gNJvfHsP59Vf0q91qxhaxW4nh22YpYca/view?usp=drive_link)
+
+---
+
 ## 📂 Project Structure
 
 ```
