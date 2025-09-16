@@ -17,19 +17,6 @@ class FolderRepository(BaseRepository[Folder]):
         await self.session.refresh(stored_folder)
         return stored_folder
 
-    async def get_folder_notes(self, folder_id: int) -> List[Note]:
-        query = (
-            select(Note)
-            .where((Note.deleted == 0) & (Note.parent_id == folder_id))
-            .options(
-                selectinload(Note.parent),
-                selectinload(Note.tags),
-                selectinload(Note.user),
-            )
-        )
-        res = await self.session.execute(query)
-        return res.scalars().all()
-
     async def get_folder_by_name_parent(
         self, folder_name: str, parent_id: int
     ) -> Optional[Folder]:

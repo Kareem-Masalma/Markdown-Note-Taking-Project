@@ -8,23 +8,23 @@ import json
 from fastapi import HTTPException
 
 from src.models.note import Note
-from src.repositories.note_repository import NoteRepository
-from src.schemas.folder_schema import ParentOut
-from src.schemas.note_schema import NoteUpdate, NoteIn, NoteOut
-from src.schemas.tag_schema import TagOut
-from src.services.redis_caching import RedisCache
+from src.repositories.note import NoteRepository
+from src.schemas.folder import ParentResponse
+from src.schemas.note import NoteUpdate, NoteRequest, NoteResponse
+from src.schemas.tag import TagResponse
+# from src.services.redis import RedisCache
 from src.config.definitions import NOTE_ID_REDIS_KEY, ALL_NOTES_REDIS_KEY
 
-redis_service = RedisCache()
+# redis_service = RedisCache()
 
 
-async def check_cache(key: str):
-    res = await redis_service.get(key)
-    return res
-
-
-async def write_on_cache(key: str, value: str, expire: int = 300):
-    await redis_service.set(key, value, expire)
+# async def check_cache(key: str):
+#     res = await redis_service.get(key)
+#     return res
+#
+#
+# async def write_on_cache(key: str, value: str, expire: int = 300):
+#     await redis_service.set(key, value, expire)
 
 
 class NoteService:
@@ -32,7 +32,7 @@ class NoteService:
     def __init__(self, note_repository: NoteRepository):
         self.note_repository = note_repository
 
-    async def get_all_notes(self) -> list[NoteOut] | None:
+    async def get_all_notes(self) -> list[NoteResponse] | None:
         """
         This method is used to get all available notes inside the database with deleted field set to 0,
         it returns all notes if found, else it raises 404 HTTPException.
@@ -41,37 +41,37 @@ class NoteService:
         """
         try:
 
-            res = await check_cache(ALL_NOTES_REDIS_KEY)
-
-            if res:
-                notes = json.loads(res)
-                notes_out = [NoteOut(**note) for note in notes]
-                return notes_out
+            # res = await check_cache(ALL_NOTES_REDIS_KEY)
+            #
+            # if res:
+            #     notes = json.loads(res)
+            #     notes_out = [NoteOut(**note) for note in notes]
+            #     return notes_out
 
             notes: list[Note] | None = await self.note_repository.get_all()
             if not notes:
                 raise HTTPException(status_code=404, detail="No notes are found")
 
             notes_out = [
-                NoteOut(
+                NoteResponse(
                     id=note.id,
                     title=note.title,
                     content=note.content,
                     username=note.user.username,
-                    parent=ParentOut(id=note.parent.id, name=note.parent.name),
-                    tags=[TagOut(id=tag.id, name=tag.name) for tag in note.tags],
+                    parent=ParentResponse(id=note.parent.id, name=note.parent.name),
+                    tags=[TagResponse(id=tag.id, name=tag.name) for tag in note.tags],
                 )
                 for note in notes
             ]
-            await write_on_cache(
-                ALL_NOTES_REDIS_KEY, json.dumps([note.dict() for note in notes_out])
-            )
+            # await write_on_cache(
+            #     ALL_NOTES_REDIS_KEY, json.dumps([note.dict() for note in notes_out])
+            # )
 
             return notes_out
         except Exception as e:
             raise e
 
-    async def get_note_by_note_id(self, note_id: int) -> NoteOut | None:
+    async def get_note_by_note_id(self, note_id: int) -> NoteResponse | None:
         """
         This method is used to get an available note with deleted field set to 0 by their note_id,
         it returns the note if found, else it raises a 404 HTTPException.
@@ -80,29 +80,29 @@ class NoteService:
         """
         try:
 
-            res = await check_cache(NOTE_ID_REDIS_KEY + f"/{note_id}")
-
-            if res:
-                res_note = json.loads(res)
-                notes_out = NoteOut(**res_note)
-                return notes_out
+            # res = await check_cache(NOTE_ID_REDIS_KEY + f"/{note_id}")
+            #
+            # if res:
+            #     res_note = json.loads(res)
+            #     notes_out = NoteOut(**res_note)
+            #     return notes_out
 
             note: Note | None = await self.note_repository.get_by_id(note_id)
             if not note:
                 raise HTTPException(status_code=404, detail=f"Note {note_id} not found")
 
-            note_out = NoteOut(
+            note_out = NoteResponse(
                 id=note.id,
                 title=note.title,
                 content=note.content,
                 username=note.user.username,
-                parent=ParentOut(id=note.parent.id, name=note.parent.name),
-                tags=[TagOut(id=tag.id, name=tag.name) for tag in note.tags],
+                parent=ParentResponse(id=note.parent.id, name=note.parent.name),
+                tags=[TagResponse(id=tag.id, name=tag.name) for tag in note.tags],
             )
 
-            await write_on_cache(
-                NOTE_ID_REDIS_KEY + f"/{note_id}", json.dumps(note_out.dict())
-            )
+            # await write_on_cache(
+            #     NOTE_ID_REDIS_KEY + f"/{note_id}", json.dumps(note_out.dict())
+            # )
 
             return note_out
         except Exception as e:
@@ -148,7 +148,7 @@ class NoteService:
         except Exception as e:
             raise e
 
-    async def add_new_note(self, note: NoteIn) -> Note | None:
+    async def add_new_note(self, note: NoteRequest) -> Note | None:
         """
         This method to add new note to the database.
 
@@ -174,7 +174,7 @@ class NoteService:
         except Exception as e:
             raise e
 
-    async def get_user_notes(self, user_id: int) -> list[NoteOut]:
+    async def get_user_notes(self, user_id: int) -> list[NoteResponse]:
         """
         This method to get all notes that belongs to certain user by their id.
 
@@ -189,13 +189,13 @@ class NoteService:
                 raise HTTPException(status_code=404, detail="No notes are found")
 
             return [
-                NoteOut(
+                NoteResponse(
                     id=note.id,
                     title=note.title,
                     content=note.content,
                     username=note.user.username,
-                    parent=ParentOut(id=note.parent.id, name=note.parent.name),
-                    tags=[TagOut(id=tag.id, name=tag.name) for tag in note.tags],
+                    parent=ParentResponse(id=note.parent.id, name=note.parent.name),
+                    tags=[TagResponse(id=tag.id, name=tag.name) for tag in note.tags],
                 )
                 for note in notes
             ]

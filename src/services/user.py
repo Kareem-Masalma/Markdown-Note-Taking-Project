@@ -7,8 +7,8 @@ from fastapi import HTTPException
 
 from src.auth import password, tokens
 from src.models.user import User
-from src.repositories.user_repository import UserRepository
-from src.schemas.user_schema import UserIn, UserUpdate
+from src.repositories.user import UserRepository
+from src.schemas.user import UserRequest, UserUpdate
 
 
 class UserService:
@@ -88,7 +88,7 @@ class UserService:
         except Exception as e:
             raise e
 
-    async def login(self, logged_user: UserIn) -> dict[str, str | bool]:
+    async def login(self, logged_user: UserRequest) -> dict[str, str | bool]:
         """
         This method is used to check the user's credentials to sign them in.
 
@@ -109,7 +109,7 @@ class UserService:
         except Exception as e:
             raise e
 
-    async def register_user(self, user: UserIn):
+    async def register_user(self, user: UserRequest):
         """
         This method to add new user to the database, the user shall not be available even with deleted fields set to 1.
 

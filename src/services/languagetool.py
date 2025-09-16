@@ -2,7 +2,7 @@ from fastapi import HTTPException
 
 from src.common.utils.grammar_checker import GrammarChecker
 from src.models.history import History
-from src.repositories.history_repository import HistoryRepository
+from src.repositories.history import HistoryRepository
 
 
 class LanguageToolService:

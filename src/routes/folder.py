@@ -4,10 +4,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.auth.tokens import check_token
 from src.common.db.connection import Connection
 from src.models.user import User
-from src.repositories.folder_repository import FolderRepository
-from src.schemas.folder_schema import FolderOut, FolderIn
-from src.schemas.note_schema import NoteOut
-from src.services.folder_service import FolderService
+from src.repositories.folder import FolderRepository
+from src.schemas.folder import FolderResponse, FolderRequest
+from src.schemas.note import NoteResponse
+from src.services.folder import FolderService
 
 router = APIRouter()
 
@@ -16,7 +16,7 @@ router = APIRouter()
     "/",
     summary="Get all folders",
     description="This endpoint return a all folders if available inside the database",
-    response_model=list[FolderOut],
+    response_model=list[FolderResponse],
     response_description="The list of folders",
     responses={
         200: {"description": "The folders requested returned successfully"},
@@ -37,7 +37,7 @@ async def get_all_folders(
     "/{folder_id}",
     summary="Get folder by its id",
     description="This endpoint return a folder if available inside the database",
-    response_model=FolderOut,
+    response_model=FolderResponse,
     response_description="The returned data is the requested folder",
     responses={
         200: {"description": "The folder requested returned successfully"},
@@ -60,7 +60,7 @@ async def get_folder_by_id(
     "/notes/{folder_id}",
     summary="Get notes folder by its id",
     description="This endpoint return a folder's notes if available inside the database",
-    response_model=list[NoteOut],
+    response_model=list[NoteResponse],
     response_description="The returned data is the requested folder's notes",
     responses={
         200: {"description": "The notes requested returned successfully"},
@@ -90,7 +90,7 @@ async def get_folders_notes(
     status_code=status.HTTP_201_CREATED,
 )
 async def create_folder(
-    folder: FolderIn,
+    folder: FolderRequest,
     user: User = Depends(check_token),
     session: AsyncSession = Depends(Connection.get_session),
 ):
@@ -107,7 +107,7 @@ async def create_folder(
     "/{folder_id}",
     summary="Rename folder",
     description="This endpoint changes the name of a certain folder by its id",
-    response_model=FolderOut,
+    response_model=FolderResponse,
     response_description="The returned data is the updated folder",
     responses={
         200: {"description": "The folder successfully renamed"},

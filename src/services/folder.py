@@ -7,19 +7,20 @@ from fastapi import HTTPException
 
 from src.models.folder import Folder
 from src.models.note import Note
-from src.repositories.folder_repository import FolderRepository
-from src.repositories.note_repository import NoteRepository
-from src.schemas.folder_schema import FolderOut, FolderIn, ParentOut
-from src.schemas.note_schema import NoteOut
-from src.schemas.tag_schema import TagOut
+from src.repositories.folder import FolderRepository
+from src.repositories.note import NoteRepository
+from src.schemas.folder import FolderResponse, FolderRequest, ParentResponse
+from src.schemas.note import NoteResponse
+from src.schemas.tag import TagResponse
 
 
 class FolderService:
 
-    def __init__(self, folder_repository: FolderRepository):
+    def __init__(self, folder_repository: FolderRepository, note_repository: NoteRepository):
         self.folder_repository = folder_repository
+        self.note_repository = note_repository
 
-    async def get_all_folders(self) -> list[FolderOut] | None:
+    async def get_all_folders(self) -> list[FolderResponse] | None:
         """
         This method is used to get all available folders inside the database with deleted field set to 0,
         it returns all folders if found, else it raises 404 HTTPException.
@@ -35,7 +36,7 @@ class FolderService:
         except Exception as e:
             raise e
 
-    async def get_folder_by_id(self, folder_id: int) -> FolderOut | None:
+    async def get_folder_by_id(self, folder_id: int) -> FolderResponse | None:
         """
         This method is used to get an available folder with deleted field set to 0 by their folder_id,
         it returns the folder if found, else it raises a 404 HTTPException.
@@ -48,16 +49,16 @@ class FolderService:
             if not folder:
                 raise HTTPException(status_code=404, detail=f"Folder not found")
 
-            folder_out = FolderOut(
+            folder_out = FolderResponse(
                 id=folder.id,
                 name=folder.name,
-                parent=ParentOut(id=folder.parent.id, name=folder.parent.name),
+                parent=ParentResponse(id=folder.parent.id, name=folder.parent.name),
             )
             return folder_out
         except Exception as e:
             raise e
 
-    async def rename_folder(self, folder_id: int, name: str) -> FolderOut:
+    async def rename_folder(self, folder_id: int, name: str) -> FolderResponse:
         """
         This method is used to rename an available folder from database with deleted field set to 0.
 
@@ -73,10 +74,10 @@ class FolderService:
 
             await self.folder_repository.rename_folder(stored_folder, name)
 
-            folder_out = FolderOut(
+            folder_out = FolderResponse(
                 id=stored_folder.id,
                 name=stored_folder.name,
-                parent=ParentOut(
+                parent=ParentResponse(
                     id=stored_folder.parent.id, name=stored_folder.parent.name
                 ),
             )
@@ -105,7 +106,7 @@ class FolderService:
         except Exception as e:
             raise e
 
-    async def create_folder(self, folder: FolderIn):
+    async def create_folder(self, folder: FolderRequest):
         """
         This method to add new folder to the database.
 
@@ -130,7 +131,7 @@ class FolderService:
         except Exception as e:
             raise e
 
-    async def get_folder_notes(self, folder_id: int) -> list[NoteOut]:
+    async def get_folder_notes(self, folder_id: int) -> list[NoteResponse]:
         """
         This method to get all notes that belongs to certain folder by its id.
 
@@ -138,20 +139,20 @@ class FolderService:
         :return: Folder child notes.
         """
         try:
-            notes: list[Note] | None = await self.folder_repository.get_folder_notes(
+            notes: list[Note] | None = await self.note_repository.get_folder_notes(
                 folder_id
             )
             if not notes:
                 raise HTTPException(status_code=404, detail="No notes are found")
 
             return [
-                NoteOut(
+                NoteResponse(
                     id=note.id,
                     title=note.title,
                     content=note.content,
                     username=note.user.username,
-                    parent=ParentOut(id=note.parent.id, name=note.parent.name),
-                    tags=[TagOut(id=tag.id, name=tag.name) for tag in note.tags],
+                    parent=ParentResponse(id=note.parent.id, name=note.parent.name),
+                    tags=[TagResponse(id=tag.id, name=tag.name) for tag in note.tags],
                 )
                 for note in notes
             ]

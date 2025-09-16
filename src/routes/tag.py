@@ -4,9 +4,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.auth.tokens import check_token
 from src.common.db.connection import Connection
 from src.models.user import User
-from src.repositories.tag_repository import TagRepository
-from src.schemas.tag_schema import TagOut, TagIn
-from src.services.tag_service import TagService
+from src.repositories.tag import TagRepository
+from src.schemas.tag import TagResponse, TagRequest
+from src.services.tag import TagService
 
 router = APIRouter()
 
@@ -15,7 +15,7 @@ router = APIRouter()
     "/",
     summary="Get all tags.",
     description="This endpoint return all tags if available inside the database",
-    response_model=list[TagOut],
+    response_model=list[TagResponse],
     response_description="The returned data are the requested tags",
     responses={
         200: {"description": "The tags requested returned successfully"},
@@ -36,7 +36,7 @@ async def get_all_tags(
     "/{tag_id}",
     summary="Get tag by its id",
     description="This endpoint return a tag if available inside the database",
-    response_model=TagOut,
+    response_model=TagResponse,
     response_description="The returned data is the requested tag",
     responses={
         200: {"description": "The tag requested returned successfully"},
@@ -88,7 +88,7 @@ async def get_tags_notes(
     status_code=status.HTTP_201_CREATED,
 )
 async def create_tag(
-    tag: TagIn,
+    tag: TagRequest,
     user: User = Depends(check_token),
     session: AsyncSession = Depends(Connection.get_session),
 ):
@@ -105,7 +105,7 @@ async def create_tag(
     "/{tag_id}",
     summary="Rename tag",
     description="This endpoint changes the name of a certain tag by its id",
-    response_model=TagOut,
+    response_model=TagResponse,
     response_description="The returned data is the updated tag",
     responses={
         200: {"description": "The tag successfully renamed"},

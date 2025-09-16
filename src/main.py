@@ -1,13 +1,13 @@
 from fastapi import FastAPI
 
-from src.routers.user_router import router as user_router
-from src.routers.note_router import router as note_router
-from src.routers.history_router import router as history_router
-from src.routers.render_router import router as render_router
-from src.routers.folder_router import router as folder_router
-from src.routers.tag_router import router as tag_router
-from src.routers.grammar_checker_router import router as grammar_router
-from src.routers.summarizaton_router import router as summarization_router
+from src.routes.user import router as user_router
+from src.routes.note import router as note_router
+from src.routes.history import router as history_router
+from src.routes.render import router as render_router
+from src.routes.folder import router as folder_router
+from src.routes.tag import router as tag_router
+from src.routes.grammar_checker import router as grammar_router
+from src.routes.summarization import router as summarization_router
 
 tags_metadata = [
     {

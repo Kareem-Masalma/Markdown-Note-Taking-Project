@@ -2,11 +2,11 @@ from typing import Optional, List
 
 from pydantic import BaseModel, Field
 
-from src.schemas.folder_schema import ParentOut
-from src.schemas.tag_schema import TagOut
+from src.schemas.folder import ParentResponse
+from src.schemas.tag import TagResponse
 
 
-class NoteIn(BaseModel):
+class NoteRequest(BaseModel):
     """Schema for creating a note"""
 
     title: str = Field(..., description="The title of the note")
@@ -31,15 +31,15 @@ class NoteIn(BaseModel):
     }
 
 
-class NoteOut(BaseModel):
+class NoteResponse(BaseModel):
     """Schema for returning a note"""
 
     id: int
     title: str
     content: str
     username: str
-    parent: ParentOut
-    tags: list[TagOut]
+    parent: ParentResponse
+    tags: list[TagResponse]
 
     model_config = {
         "json_schema_extra": {

@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 
 
-class TagOut(BaseModel):
+class TagResponse(BaseModel):
     """The response schema of tags."""
 
     id: int
@@ -12,7 +12,7 @@ class TagOut(BaseModel):
     }
 
 
-class TagIn(BaseModel):
+class TagRequest(BaseModel):
     """The input schema of tags."""
 
     name: str = Field(..., title="Name of the Tag", description="The name of the tag.")

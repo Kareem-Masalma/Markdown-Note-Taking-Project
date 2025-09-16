@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models.user import User
-from src.schemas.user_schema import UserUpdate
+from src.schemas.user import UserUpdate
 
 
 class UserRepository:

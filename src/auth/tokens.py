@@ -15,8 +15,8 @@ from src.config.definitions import SECRETE, ALGO
 
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-from src.repositories.user_repository import UserRepository
-from src.services.user_service import UserService
+from src.repositories.user import UserRepository
+from src.services.user import UserService
 
 bearer_scheme = HTTPBearer()
 

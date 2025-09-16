@@ -3,7 +3,7 @@ import datetime
 from pydantic import BaseModel
 
 
-class HistoryOut(BaseModel):
+class HistoryResponse(BaseModel):
     id: int
     rev_description: str
     note_id: int

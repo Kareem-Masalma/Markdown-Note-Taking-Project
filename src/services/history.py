@@ -2,7 +2,7 @@ from fastapi import HTTPException
 
 from src.models.history import History
 from src.models.note import Note
-from src.repositories.history_repository import HistoryRepository
+from src.repositories.history import HistoryRepository
 
 
 class HistoryService:

@@ -4,8 +4,8 @@ from fastapi import HTTPException
 
 from src.models.history import History
 from src.models.issue import Issue
-from src.repositories.history_repository import HistoryRepository
-from src.repositories.issue_repositoy import IssueRepository
+from src.repositories.history import HistoryRepository
+from src.repositories.issue import IssueRepository
 
 
 class IssueService:

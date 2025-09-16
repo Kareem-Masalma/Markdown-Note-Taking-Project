@@ -4,7 +4,7 @@ from sqlalchemy.orm import selectinload
 
 from src.models.note import Note
 from src.models.note_tag import note_tags
-from src.schemas.note_schema import NoteUpdate
+from src.schemas.note import NoteUpdate
 from src.repositories.base_repository import BaseRepository, T
 
 
@@ -80,3 +80,17 @@ class NoteRepository(BaseRepository[Note]):
         )
         await self.session.execute(stmt)
         await self.session.commit()
+
+
+    async def get_folder_notes(self, folder_id: int) -> List[Note]:
+        query = (
+            select(Note)
+            .where((Note.deleted == 0) & (Note.parent_id == folder_id))
+            .options(
+                selectinload(Note.parent),
+                selectinload(Note.tags),
+                selectinload(Note.user),
+            )
+        )
+        res = await self.session.execute(query)
+        return res.scalars().all()

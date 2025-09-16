@@ -5,11 +5,11 @@ from src.auth.tokens import check_token
 from src.common.db.connection import Connection
 from src.models.history import History
 from src.models.user import User
-from src.repositories.history_repository import HistoryRepository
-from src.repositories.issue_repositoy import IssueRepository
-from src.schemas.history_schema import HistoryOut
-from src.services.issue_service import IssueService
-from src.services.languagetool_service import LanguageToolService
+from src.repositories.history import HistoryRepository
+from src.repositories.issue import IssueRepository
+from src.schemas.history import HistoryResponse
+from src.services.issue import IssueService
+from src.services.languagetool import LanguageToolService
 
 router = APIRouter()
 
@@ -48,7 +48,7 @@ async def check_version_grammar(
     "/fix/issue/{issue_id}",
     summary="Fix grammar issue",
     description="This endpoint fixes a grammar issue from the database",
-    response_model=HistoryOut,
+    response_model=HistoryResponse,
     response_description="The returned data is the fixed version",
     responses={
         200: {"description": "The issue successfully fixed."},

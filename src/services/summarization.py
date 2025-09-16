@@ -2,20 +2,20 @@ from fastapi import HTTPException, Response
 
 from src.config.definitions import SUMMARY_KEY
 from src.models.note import Note
-from src.repositories.note_repository import NoteRepository
+from src.repositories.note import NoteRepository
 from src.common.utils.gemini_api import send_to_gemini
-from src.services.redis_caching import RedisCache
+# from src.services.redis import RedisCache
 
-redis_service = RedisCache()
-
-
-async def check_cache(key: str):
-    res = await redis_service.get(key)
-    return res
+# redis_service = RedisCache()
 
 
-async def write_on_cache(key: str, value: str, expire: int = 3600):
-    await redis_service.set(key, value, expire)
+# async def check_cache(key: str):
+#     res = await redis_service.get(key)
+#     return res
+#
+#
+# async def write_on_cache(key: str, value: str, expire: int = 3600):
+#     await redis_service.set(key, value, expire)
 
 
 class SummarizeNotes:
@@ -37,16 +37,16 @@ class SummarizeNotes:
             if not note:
                 raise HTTPException(status_code=404, detail="Note not found")
 
-            res = await check_cache(SUMMARY_KEY)
-            if res:
-                return {"note": {"id": note.id, "title": note.title}, "summary": res}
+            # res = await check_cache(SUMMARY_KEY)
+            # if res:
+            #     return {"note": {"id": note.id, "title": note.title}, "summary": res}
 
             response = await send_to_gemini(
                 f"Summarize this note in a few sentences:\n\n{note.content}"
             )
             summarization = response.candidates[0].content.parts[0].text
 
-            await write_on_cache(SUMMARY_KEY, summarization)
+            # await write_on_cache(SUMMARY_KEY, summarization)
 
             return {
                 "note": {"id": note.id, "title": note.title},

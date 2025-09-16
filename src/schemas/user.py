@@ -7,7 +7,7 @@ from typing import Optional
 from pydantic import BaseModel, EmailStr, Field
 
 
-class UserIn(BaseModel):
+class UserRequest(BaseModel):
     """User base schema"""
 
     username: str
@@ -34,7 +34,7 @@ class UserIn(BaseModel):
     }
 
 
-class UserOut(BaseModel):
+class UserResponse(BaseModel):
     """User response schema"""
 
     id: int

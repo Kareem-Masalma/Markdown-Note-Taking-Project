@@ -4,8 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.auth.tokens import check_token
 from src.common.db.connection import Connection
 from src.models.user import User
-from src.repositories.note_repository import NoteRepository
-from src.services.summarize_notes_service import SummarizeNotes
+from src.repositories.note import NoteRepository
+from src.services.summarization import SummarizeNotes
 
 router = APIRouter()
 

@@ -11,9 +11,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.auth.tokens import check_token
 from src.common.db.connection import Connection
 from src.models.user import User
-from src.repositories.user_repository import UserRepository
-from src.schemas.user_schema import UserOut, UserIn, UserUpdate
-from src.services.user_service import UserService
+from src.repositories.user import UserRepository
+from src.schemas.user import UserResponse, UserRequest, UserUpdate
+from src.services.user import UserService
 
 router = APIRouter()
 
@@ -22,7 +22,7 @@ router = APIRouter()
     "/",
     summary="Get all users",
     description="This endpoint returns all users available inside the database",
-    response_model=list[UserOut],
+    response_model=list[UserResponse],
     response_description="The returned data are all the users available inside the database",
     responses={
         200: {"description": "All users returned successfully"},
@@ -50,7 +50,7 @@ async def get_all_users(
     "/{username}",
     summary="Get user by username",
     description="This endpoint returns a specific user by their username",
-    response_model=UserOut,
+    response_model=UserResponse,
     response_description="The returned data is a user available in the database",
     responses={
         200: {"description": "User is found"},
@@ -88,7 +88,7 @@ async def get_user_by_username(
     },
     status_code=status.HTTP_200_OK,
 )
-async def login(user: UserIn, session: AsyncSession = Depends(Connection.get_session)):
+async def login(user: UserRequest, session: AsyncSession = Depends(Connection.get_session)):
     """
     This endpoint is used to log in. When Logging in successfully an authorization module is called
     to generate jwt token to return it to the user.
@@ -118,7 +118,7 @@ async def login(user: UserIn, session: AsyncSession = Depends(Connection.get_ses
     status_code=status.HTTP_201_CREATED,
 )
 async def register(
-    user: UserIn = Query(
+    user: UserRequest = Query(
         ..., title="New User", description="The new user to register to database"
     ),
     session: AsyncSession = Depends(Connection.get_session),
@@ -143,7 +143,7 @@ async def register(
     "/{username}",
     summary="Update user",
     description="This endpoint updates a user's data by their username",
-    response_model=UserOut,
+    response_model=UserResponse,
     response_description="The returned data is the updated user",
     responses={
         200: {"description": "Updated Successfully"},

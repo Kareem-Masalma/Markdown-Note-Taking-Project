@@ -2,15 +2,15 @@ from fastapi import HTTPException
 
 from src.models.note import Note
 from src.models.tag import Tag
-from src.repositories.tag_repository import TagRepository
-from src.schemas.tag_schema import TagIn, TagOut
+from src.repositories.tag import TagRepository
+from src.schemas.tag import TagRequest, TagResponse
 
 
 class TagService:
     def __init__(self, tag_repository: TagRepository):
         self.tag_repository = tag_repository
 
-    async def create_tag(self, tag: TagIn):
+    async def create_tag(self, tag: TagRequest):
         """
         This method to create a new tag that doesn't exist in the database.
 
@@ -82,7 +82,7 @@ class TagService:
 
             await self.tag_repository.rename_tag(stored_tag, new_name)
 
-            tag_out = TagOut(id=stored_tag.id, name=stored_tag.name)
+            tag_out = TagResponse(id=stored_tag.id, name=stored_tag.name)
             return tag_out
         except Exception as e:
             raise e

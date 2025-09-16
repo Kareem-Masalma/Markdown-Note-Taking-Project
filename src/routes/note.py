@@ -12,13 +12,13 @@ from src.auth.tokens import check_token
 from src.common.db.connection import Connection
 from src.common.utils.generate_etag import generate_etag
 from src.models.user import User
-from src.repositories.history_repository import HistoryRepository
-from src.repositories.note_repository import NoteRepository
-from src.schemas.folder_schema import ParentOut
-from src.schemas.note_schema import NoteOut, NoteIn, NoteUpdate
-from src.schemas.tag_schema import TagOut
-from src.services.history_service import HistoryService
-from src.services.note_service import NoteService
+from src.repositories.history import HistoryRepository
+from src.repositories.note import NoteRepository
+from src.schemas.folder import ParentResponse
+from src.schemas.note import NoteResponse, NoteRequest, NoteUpdate
+from src.schemas.tag import TagResponse
+from src.services.history import HistoryService
+from src.services.note import NoteService
 
 router = APIRouter()
 
@@ -27,7 +27,7 @@ router = APIRouter()
     "/",
     summary="Get all notes",
     description="This endpoint returns all notes available inside the database",
-    response_model=list[NoteOut],
+    response_model=list[NoteResponse],
     response_description="The returned data are all the notes available inside the database",
     responses={
         200: {"description": "All notes returned successfully"},
@@ -55,7 +55,7 @@ async def get_all_notes(
     "/{note_id}",
     summary="Get note by its id",
     description="This endpoint return a note if available inside the database",
-    response_model=NoteOut,
+    response_model=NoteResponse,
     response_description="The returned data is the requested note",
     responses={
         200: {"description": "The note requested returned successfully"},
@@ -96,7 +96,7 @@ async def get_note_by_id(
     "/user/{user_id}",
     summary="Get all notes for a certain user",
     description="This endpoint return a all notes of a user if available inside the database",
-    response_model=list[NoteOut],
+    response_model=list[NoteResponse],
     response_description="The returned data is a list of notes",
     responses={
         200: {"description": "All notes returned successfully"},
@@ -133,7 +133,7 @@ async def get_users_notes(
     status_code=status.HTTP_201_CREATED,
 )
 async def add_new_note(
-    note: NoteIn,
+    note: NoteRequest,
     user: User = Depends(check_token),
     session: AsyncSession = Depends(Connection.get_session),
 ):
@@ -162,7 +162,7 @@ async def add_new_note(
     "/{note_id}",
     summary="Update note",
     description="This endpoint updates a note by its id.",
-    response_model=NoteOut,
+    response_model=NoteResponse,
     response_description="The returned data is the updated note",
     responses={
         200: {"description": "The note updated successfully"},
@@ -190,13 +190,13 @@ async def update_note(
         note = await note_service.update_note(note_id, note)
         history_service = HistoryService(HistoryRepository(session))
         await history_service.create_new_history_version(note, f"Note updated")
-        return NoteOut(
+        return NoteResponse(
             id=note.id,
             title=note.title,
             content=note.content,
             username=note.user.username,
-            parent=ParentOut(id=note.parent.id, name=note.parent.name),
-            tags=[TagOut(id=tag.id, name=tag.name) for tag in note.tags],
+            parent=ParentResponse(id=note.parent.id, name=note.parent.name),
+            tags=[TagResponse(id=tag.id, name=tag.name) for tag in note.tags],
         )
     except Exception as e:
         await session.rollback()

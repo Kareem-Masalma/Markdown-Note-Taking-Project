@@ -5,11 +5,11 @@ from src.auth.tokens import check_token
 from src.common.db.connection import Connection
 from src.models.issue import Issue
 from src.models.user import User
-from src.repositories.history_repository import HistoryRepository
-from src.repositories.issue_repositoy import IssueRepository
-from src.schemas.history_schema import HistoryOut
-from src.services.history_service import HistoryService
-from src.services.issue_service import IssueService
+from src.repositories.history import HistoryRepository
+from src.repositories.issue import IssueRepository
+from src.schemas.history import HistoryResponse
+from src.services.history import HistoryService
+from src.services.issue import IssueService
 
 router = APIRouter()
 
@@ -18,7 +18,7 @@ router = APIRouter()
     "/{note_id}",
     summary="Get note's history  by its id",
     description="This endpoint returns note's history if available inside the database",
-    response_model=list[HistoryOut],
+    response_model=list[HistoryResponse],
     response_description="The returned data is the history of a note",
     responses={
         200: {"description": "All note's history is returned successfully"},
@@ -48,7 +48,7 @@ async def get_note_history(
     "/version/{version_id}",
     summary="Get note's version",
     description="This endpoint return a version of a note if available inside the database",
-    response_model=HistoryOut,
+    response_model=HistoryResponse,
     response_description="The returned data is a version of a note",
     responses={
         200: {"description": "The requested note's history returned successfully"},

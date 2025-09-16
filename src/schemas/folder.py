@@ -19,14 +19,14 @@ class ChildNotes(BaseModel):
     }
 
 
-class ParentOut(BaseModel):
+class ParentResponse(BaseModel):
     id: int
     name: str
 
     model_config = {"json_schema_extra": {"examples": [{"id": 1, "name": "Projects"}]}}
 
 
-class FolderIn(BaseModel):
+class FolderRequest(BaseModel):
     name: str = Field(..., description="The name field for the folder.")
     parent: int = Field(default=0, description="The id of the parent folder.")
 
@@ -35,10 +35,10 @@ class FolderIn(BaseModel):
     }
 
 
-class FolderOut(BaseModel):
+class FolderResponse(BaseModel):
     id: int
     name: str
-    parent: ParentOut
+    parent: ParentResponse
 
     model_config = {
         "json_schema_extra": {

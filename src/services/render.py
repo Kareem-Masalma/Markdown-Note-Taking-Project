@@ -3,7 +3,7 @@ from fastapi import HTTPException, Response
 from src.common.utils.generate_etag import generate_etag
 from src.common.utils.render_markdown import render_markdown_to_html
 from src.models.note import Note
-from src.repositories.note_repository import NoteRepository
+from src.repositories.note import NoteRepository
 
 
 class RenderService:
