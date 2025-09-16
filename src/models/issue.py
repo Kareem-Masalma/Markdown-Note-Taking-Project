@@ -17,7 +17,5 @@ class Issue(Connection.get_base()):
     suggestion = Column(String)
     fixed = Column(Integer, nullable=False, default=0)
     deleted = Column(Integer, nullable=False, default=0)
-
     version_id = Column(Integer, ForeignKey("History.id", ondelete="CASCADE"))
-
     history = relationship("History", back_populates="issues")

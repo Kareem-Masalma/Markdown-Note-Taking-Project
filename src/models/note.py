@@ -14,7 +14,6 @@ class Note(Connection.get_base()):
     user_id = Column(Integer, ForeignKey("Users.id"), nullable=False)
     parent_id = Column(Integer, ForeignKey("Folders.id"), default=0, nullable=False)
     deleted = Column(Integer, nullable=False, default=0)
-
     user = relationship("User", back_populates="notes")
     parent = relationship("Folder", back_populates="notes")
     tags = relationship("Tag", secondary=note_tags, back_populates="notes")
