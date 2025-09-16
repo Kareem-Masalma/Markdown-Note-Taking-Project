@@ -37,7 +37,7 @@ class HistoryService:
         :return: The version from database if found.
         """
         try:
-            history = await self.history_repository.get_version_by_id(version_id)
+            history = await self.history_repository.get_by_id(version_id)
             if not history:
                 raise HTTPException(status_code=404, detail="Version not found")
 

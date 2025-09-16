@@ -4,6 +4,7 @@ from src.common.utils.generate_etag import generate_etag
 from src.common.utils.render_markdown import render_markdown_to_html
 from src.models.note import Note
 from src.repositories.note import NoteRepository
+from src.schemas.render import RenderResponse
 
 
 class RenderService:
@@ -32,7 +33,7 @@ class RenderService:
                 raise HTTPException(status_code=304, detail="Not modified")
 
             markdown_text = note.content
-            html_text = render_markdown_to_html(markdown_text)
-            return html_text
+            rendered_html = render_markdown_to_html(markdown_text)
+            return RenderResponse(note_id=note_id, rendered_html=rendered_html)
         except Exception as e:
             raise e

@@ -73,14 +73,9 @@ class NoteRepository(BaseRepository[Note]):
         await self.session.commit()
 
     async def delete_folder_notes(self, folder_id: int):
-        stmt = (
-            update(Note)
-            .where(Note.parent_id == folder_id)
-            .values(deleted=1)
-        )
+        stmt = update(Note).where(Note.parent_id == folder_id).values(deleted=1)
         await self.session.execute(stmt)
         await self.session.commit()
-
 
     async def get_folder_notes(self, folder_id: int) -> List[Note]:
         query = (

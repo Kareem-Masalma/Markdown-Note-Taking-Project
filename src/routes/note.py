@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.auth.tokens import check_token
 from src.common.db.connection import Connection
 from src.common.utils.generate_etag import generate_etag
+from src.dependencies.note import get_note_service
 from src.models.user import User
 from src.repositories.history import HistoryRepository
 from src.repositories.note import NoteRepository
@@ -20,7 +21,7 @@ from src.schemas.tag import TagResponse
 from src.services.history import HistoryService
 from src.services.note import NoteService
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(check_token)])
 
 
 @router.get(
@@ -35,18 +36,13 @@ router = APIRouter()
     },
     status_code=status.HTTP_200_OK,
 )
-async def get_all_notes(
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
-):
+async def get_all_notes(note_service: NoteService = Depends(get_note_service)):
     """
     This method is to get all notes in the database, where deleted field is set to be 0.
 
-    :param user: Check if the user is authorized to use the endpoint by checking the jwt token sent in the header.
-    :param session: This is the async session used to handle the database.
+    :param note_service: The note service to be used to get all notes.
     :return: The returned value is a list of all available notes inside the database.
     """
-    note_service = NoteService(NoteRepository(session))
     notes = await note_service.get_all_notes()
     return notes
 
@@ -68,8 +64,7 @@ async def get_note_by_id(
     note_id: int,
     response: Response,
     if_none_match: str | None = Header(default=None),
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+    note_service: NoteService = Depends(get_note_service),
 ):
     """
     This method to get a note by its id.
@@ -77,11 +72,9 @@ async def get_note_by_id(
     :param note_id: The id of the note to be found.
     :param response: The response to be sent.
     :param if_none_match: The value of the previous etag, checked with current content of note.
-    :param user: Check if the user is authorized to use the endpoint by checking the jwt token sent in the header.
-    :param session: This is the async session used to handle the database.
+    :param note_service: The note service to be used to get the note.
     :return: The note requested.
     """
-    note_service = NoteService(NoteRepository(session))
     note = await note_service.get_note_by_note_id(note_id)
     etag = generate_etag(note.content)
     response.headers["ETag"] = etag
@@ -106,18 +99,16 @@ async def get_note_by_id(
 )
 async def get_users_notes(
     user_id: int,
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+    note_service: NoteService = Depends(get_note_service),
 ):
     """
     This endpoint get all the user's notes available in the database with deleted field set to 0.
 
     :param user_id: The id of the user to get their notes.
-    :param user: Check if the user is authorized to use the endpoint by checking the jwt token sent in the header.
-    :param session: This is the async session used to handle the database.
+
+    :param note_service: The note service to be used to get the user's notes.
     :return: The returned value is the notes of a certain user.
     """
-    note_service = NoteService(NoteRepository(session))
     notes = await note_service.get_user_notes(user_id)
     return notes
 
@@ -134,28 +125,18 @@ async def get_users_notes(
 )
 async def add_new_note(
     note: NoteRequest,
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+    note_service: NoteService = Depends(get_note_service),
 ):
     """
     This method adds new note to the database.
 
     :param note: The note to be added.
-    :param user: Check if the user is authorized to use the endpoint by checking the jwt token sent in the header.
-    :param session: This is the async session used to handle the database.
+    :param note_service: The note service to be used to add the new note.
     :return: The note added.
     """
-    try:
-        note_service = NoteService(NoteRepository(session))
-        note = await note_service.add_new_note(note)
-        history_service = HistoryService(HistoryRepository(session))
-        await history_service.create_new_history_version(
-            note, f"Note created: {note.id}, {note.title}"
-        )
-        return note
-    except Exception as e:
-        await session.rollback()
-        raise e
+
+    note = await note_service.add_new_note(note)
+    return note
 
 
 @router.patch(
@@ -173,34 +154,19 @@ async def add_new_note(
 async def update_note(
     note_id: int,
     note: NoteUpdate,
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+    note_service: NoteService = Depends(get_note_service),
 ):
     """
     This endpoint to update available note's data, the note shall be available if not HTTPException 404 is raised.
 
     :param note_id: The id of the note to be updated.
     :param note: The new data to update the note.
-    :param user: Check if the user is authorized to use the endpoint by checking the jwt token sent in the header.
-    :param session: This is the async session used to handle the database.
+    :param note_service: The note service to be used to update the note.
     :return: The updated note.
     """
-    try:
-        note_service = NoteService(NoteRepository(session))
-        note = await note_service.update_note(note_id, note)
-        history_service = HistoryService(HistoryRepository(session))
-        await history_service.create_new_history_version(note, f"Note updated")
-        return NoteResponse(
-            id=note.id,
-            title=note.title,
-            content=note.content,
-            username=note.user.username,
-            parent=ParentResponse(id=note.parent.id, name=note.parent.name),
-            tags=[TagResponse(id=tag.id, name=tag.name) for tag in note.tags],
-        )
-    except Exception as e:
-        await session.rollback()
-        raise e
+
+    note = await note_service.update_note(note_id, note)
+    return note
 
 
 @router.delete(
@@ -216,22 +182,15 @@ async def update_note(
 )
 async def delete_note(
     note_id: int,
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+    note_service: NoteService = Depends(get_note_service),
 ):
     """
     This method to delete a note from the database if available, else it raises a 404 HTTPException.
 
     :param note_id: The id of the note to be deleted.
-    :param user: Check if the user is authorized to use the endpoint by checking the jwt token sent in the header.
-    :param session: This is the async session used to handle the database.
+    :param note_service: The note service to be used to delete the note.
     :return: Successful message.
     """
-    try:
-        note_service = NoteService(NoteRepository(session))
-        note = await note_service.delete_note(note_id)
-        history_service = HistoryService(HistoryRepository(session))
-        await history_service.create_new_history_version(note, f"Note deleted")
-    except Exception as e:
-        await session.rollback()
-        raise e
+
+    note = await note_service.delete_note(note_id)
+    return note

@@ -1,14 +1,11 @@
 from fastapi import APIRouter, Depends, status
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.tokens import check_token
-from src.common.db.connection import Connection
-from src.models.user import User
-from src.repositories.tag import TagRepository
+from src.dependencies.tag import get_tag_service
 from src.schemas.tag import TagResponse, TagRequest
 from src.services.tag import TagService
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(check_token)])
 
 
 @router.get(
@@ -23,11 +20,7 @@ router = APIRouter()
     },
     status_code=status.HTTP_200_OK,
 )
-async def get_all_tags(
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
-):
-    tag_service = TagService(TagRepository(session))
+async def get_all_tags(tag_service: TagService = Depends(get_tag_service)):
     tags = await tag_service.get_all_tags()
     return tags
 
@@ -45,13 +38,9 @@ async def get_all_tags(
     status_code=status.HTTP_200_OK,
 )
 async def get_tag_by_id(
-    tag_id: int,
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+    tag_id: int, tag_service: TagService = Depends(get_tag_service)
 ):
-    tag_service = TagService(TagRepository(session))
     tag = await tag_service.get_tag_by_id(tag_id)
-
     return tag
 
 
@@ -67,11 +56,8 @@ async def get_tag_by_id(
     status_code=status.HTTP_200_OK,
 )
 async def get_tags_notes(
-    tag_id: int,
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+    tag_id: int, tag_service: TagService = Depends(get_tag_service)
 ):
-    tag_service = TagService(TagRepository(session))
     notes = await tag_service.get_tag_notes(tag_id)
     return notes
 
@@ -89,16 +75,10 @@ async def get_tags_notes(
 )
 async def create_tag(
     tag: TagRequest,
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+    tag_service: TagService = Depends(get_tag_service),
 ):
-    try:
-        tag_service = TagService(TagRepository(session))
-        tag = await tag_service.create_tag(tag)
-        return tag
-    except Exception as e:
-        await session.rollback()
-        raise e
+    tag = await tag_service.create_tag(tag)
+    return tag
 
 
 @router.patch(
@@ -116,16 +96,10 @@ async def create_tag(
 async def rename_folder(
     tag_id: int,
     new_name: str,
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+    tag_service: TagService = Depends(get_tag_service),
 ):
-    try:
-        tag_service = TagService(TagRepository(session))
-        tag = await tag_service.rename_tag(tag_id, new_name)
-        return tag
-    except Exception as e:
-        await session.rollback()
-        raise e
+    tag = await tag_service.rename_tag(tag_id, new_name)
+    return tag
 
 
 @router.delete(
@@ -138,15 +112,6 @@ async def rename_folder(
     },
     status_code=status.HTTP_200_OK,
 )
-async def delete_tag(
-    tag_id: int,
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
-):
-    try:
-        tag_service = TagService(TagRepository(session))
-        deleted = await tag_service.delete_tag(tag_id)
-        return deleted
-    except Exception as e:
-        await session.rollback()
-        raise e
+async def delete_tag(tag_id: int, tag_service: TagService = Depends(get_tag_service)):
+    deleted = await tag_service.delete_tag(tag_id)
+    return deleted

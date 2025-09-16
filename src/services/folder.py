@@ -16,7 +16,9 @@ from src.schemas.tag import TagResponse
 
 class FolderService:
 
-    def __init__(self, folder_repository: FolderRepository, note_repository: NoteRepository):
+    def __init__(
+        self, folder_repository: FolderRepository, note_repository: NoteRepository
+    ):
         self.folder_repository = folder_repository
         self.note_repository = note_repository
 
@@ -100,8 +102,7 @@ class FolderService:
                 raise HTTPException(status_code=404, detail="Folder doesn't exists.")
 
             await self.folder_repository.delete(folder_id)
-            note_repo = NoteRepository(self.folder_repository.session)
-            await note_repo.delete_folder_notes(folder_id)
+            await self.note_repository.delete_folder_notes(folder_id)
             return True
         except Exception as e:
             raise e

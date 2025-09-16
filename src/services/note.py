@@ -3,8 +3,6 @@ This module is the methods used to handle notes endpoint operations, get note by
 delete note, update note, add new note.
 """
 
-import json
-
 from fastapi import HTTPException
 
 from src.models.note import Note
@@ -12,8 +10,10 @@ from src.repositories.note import NoteRepository
 from src.schemas.folder import ParentResponse
 from src.schemas.note import NoteUpdate, NoteRequest, NoteResponse
 from src.schemas.tag import TagResponse
+
 # from src.services.redis import RedisCache
-from src.config.definitions import NOTE_ID_REDIS_KEY, ALL_NOTES_REDIS_KEY
+from src.services.history import HistoryService
+
 
 # redis_service = RedisCache()
 
@@ -29,8 +29,11 @@ from src.config.definitions import NOTE_ID_REDIS_KEY, ALL_NOTES_REDIS_KEY
 
 class NoteService:
 
-    def __init__(self, note_repository: NoteRepository):
+    def __init__(
+        self, note_repository: NoteRepository, history_service: HistoryService
+    ) -> None:
         self.note_repository = note_repository
+        self.history_service = history_service
 
     async def get_all_notes(self) -> list[NoteResponse] | None:
         """
@@ -108,7 +111,7 @@ class NoteService:
         except Exception as e:
             raise e
 
-    async def update_note(self, note_id: int, note: NoteUpdate) -> Note:
+    async def update_note(self, note_id: int, note: NoteUpdate) -> NoteResponse:
         """
         This method is used to update an available note from database with deleted field set to 0,
         exclude_unset is set to be True, which removes the empty fields that aren't meant to be updated.
@@ -125,7 +128,19 @@ class NoteService:
 
             await self.note_repository.update_note(stored_note, note)
 
-            return stored_note
+            await self.history_service.create_new_history_version(
+                stored_note, f"Note updated"
+            )
+
+            note_response = NoteResponse(
+                id=note.id,
+                title=note.title,
+                content=note.content,
+                username=note.user.username,
+                parent=ParentResponse(id=note.parent.id, name=note.parent.name),
+                tags=[TagResponse(id=tag.id, name=tag.name) for tag in note.tags],
+            )
+            return note_response
         except Exception as e:
             raise e
 
@@ -144,6 +159,10 @@ class NoteService:
                 raise HTTPException(status_code=404, detail="Note not found.")
 
             await self.note_repository.delete(note_id)
+
+            await self.history_service.create_new_history_version(
+                exists, f"Note deleted"
+            )
             return exists
         except Exception as e:
             raise e
@@ -170,6 +189,9 @@ class NoteService:
                 for tag in tags:
                     await self.note_repository.add_tag_note(new_note.id, tag)
 
+            await self.history_service.create_new_history_version(
+                new_note, f"Note created: {note.id}, {note.title}"
+            )
             return new_note
         except Exception as e:
             raise e

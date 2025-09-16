@@ -6,12 +6,10 @@ database, and Login.
 """
 
 from fastapi import APIRouter, Depends, Query, status
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.tokens import check_token
-from src.common.db.connection import Connection
+from src.dependencies.user import get_user_service
 from src.models.user import User
-from src.repositories.user import UserRepository
 from src.schemas.user import UserResponse, UserRequest, UserUpdate
 from src.services.user import UserService
 
@@ -30,18 +28,13 @@ router = APIRouter()
     },
     status_code=status.HTTP_200_OK,
 )
-async def get_all_users(
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
-):
+async def get_all_users(user_service: UserService = Depends(get_user_service)):
     """
     This endpoint is used to get all available users in the system(with delete filed set to 0).
 
-    :param user: Check if the user is authorized to use the endpoint by checking the jwt token sent in the header.
-    :param session: This is the async session used to handle the database.
+    :param user_service: The user service to be used to get all users.
     :return: The returned value is a list of users.
     """
-    user_service = UserService(UserRepository(session))
     users = await user_service.get_all_users()
     return users
 
@@ -59,20 +52,16 @@ async def get_all_users(
     status_code=status.HTTP_200_OK,
 )
 async def get_user_by_username(
-    username: str,
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+    username: str, user_service: UserService = Depends(get_user_service)
 ):
     """
     This endpoint is used to get a certain user by their username,
      the user shall be available with deleted field set to 0.
 
     :param username: The username, unique value for each user.
-    :param user: Check if the user is authorized to use this endpoint by checking the jwt token sent with header.
-    :param session: This is the async session used to handle the database.
+    :param user_service: The user service to be used to get the user.
     :return: The returned value is the user if found, if not a 404 HTTPException is raised.
     """
-    user_service = UserService(UserRepository(session))
     user = await user_service.get_user_by_username(username)
     return user
 
@@ -88,22 +77,19 @@ async def get_user_by_username(
     },
     status_code=status.HTTP_200_OK,
 )
-async def login(user: UserRequest, session: AsyncSession = Depends(Connection.get_session)):
+async def login(
+    user: UserRequest, user_service: UserService = Depends(get_user_service)
+):
     """
     This endpoint is used to log in. When Logging in successfully an authorization module is called
     to generate jwt token to return it to the user.
 
-    :param user: This parameter is the user information used to log in (username and password).
-    :param session: This is the async session used to handle the database.
+    :param user: The user's information to log in with.
+    :param user_service: The user service to be used to log in the user.
     :return: The returned value is the jwt token so the user can use to be authorized to use endpoints.
     """
-    try:
-        user_service = UserService(UserRepository(session))
-        response = await user_service.login(user)
-        return response
-    except Exception as e:
-        await session.rollback()
-        raise e
+    response = await user_service.login(user)
+    return response
 
 
 @router.post(
@@ -121,22 +107,17 @@ async def register(
     user: UserRequest = Query(
         ..., title="New User", description="The new user to register to database"
     ),
-    session: AsyncSession = Depends(Connection.get_session),
+    user_service: UserService = Depends(get_user_service),
 ):
     """
     This endpoint is for creating new user, which is not available in the database even with deleted set to 0.
 
     :param user: The new user's information.
-    :param session: This is the async session used to handle the database.
+    :param user_service: The user service to be used to register the new user.
     :return: The new user created with its new auto generated id.
     """
-    try:
-        user_service = UserService(UserRepository(session))
-        user = await user_service.register_user(user)
-        return user
-    except Exception as e:
-        await session.rollback()
-        raise e
+    user = await user_service.register_user(user)
+    return user
 
 
 @router.patch(
@@ -155,7 +136,7 @@ async def update_user(
     username: str,
     user: UserUpdate,
     user_check: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+    user_service: UserService = Depends(get_user_service),
 ):
     """
     This endpoint to update available user's data, the user shall be available if not HTTPException 404 is raised.
@@ -163,16 +144,11 @@ async def update_user(
     :param username: The username of the user's data to be updated.
     :param user: The new data to update.
     :param user_check: Check if the user is authorized by the jwt token in the header.
-    :param session: This is the async session used to handle the database.
+    :param user_service: The user service to be used to update the user.
     :return: Return success if the update is done, if not 404 HTTPException.
     """
-    try:
-        user_service = UserService(UserRepository(session))
-        updated_user = await user_service.update_user(username, user)
-        return updated_user
-    except Exception as e:
-        await session.rollback()
-        raise e
+    updated_user = await user_service.update_user(username, user)
+    return updated_user
 
 
 @router.delete(
@@ -189,20 +165,15 @@ async def update_user(
 async def delete_user(
     username: str,
     user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+    user_service: UserService = Depends(get_user_service),
 ):
     """
     This endpoint to delete an available user from the database with deleted field set to 0.
 
     :param username: The username of the user's data to be deleted.
     :param user: Check if the user is authorized by the jwt token in the header.
-    :param session: This is the async session used to handle the database.
+    :param user_service: The user service to be used to delete the user.
     :return: Success message if the user is deleted, HTTPException 404 if user not found.
     """
-    try:
-        user_service = UserService(UserRepository(session))
-        await user_service.delete_user(username)
-        return {"success": True, "message": f"user {username} deleted"}
-    except Exception as e:
-        await session.rollback()
-        raise e
+    await user_service.delete_user(username)
+    return {"success": True, "message": f"user {username} deleted"}

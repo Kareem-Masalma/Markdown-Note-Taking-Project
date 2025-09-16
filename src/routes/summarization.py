@@ -1,13 +1,10 @@
 from fastapi import APIRouter, Depends, status
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.tokens import check_token
-from src.common.db.connection import Connection
-from src.models.user import User
-from src.repositories.note import NoteRepository
+from src.dependencies.summarization import get_summarization_service
 from src.services.summarization import SummarizeNotes
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(check_token)])
 
 
 @router.get(
@@ -22,12 +19,7 @@ router = APIRouter()
     status_code=status.HTTP_200_OK,
 )
 async def get_note_summary(
-    note_id: int,
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+    note_id: int, summarize_service: SummarizeNotes = Depends(get_summarization_service)
 ):
-    summarize_service = SummarizeNotes(NoteRepository(session))
-
     response = await summarize_service.summarize(note_id)
-
     return response

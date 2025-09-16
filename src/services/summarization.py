@@ -1,9 +1,9 @@
-from fastapi import HTTPException, Response
+from fastapi import HTTPException
 
-from src.config.definitions import SUMMARY_KEY
 from src.models.note import Note
 from src.repositories.note import NoteRepository
 from src.common.utils.gemini_api import send_to_gemini
+
 # from src.services.redis import RedisCache
 
 # redis_service = RedisCache()

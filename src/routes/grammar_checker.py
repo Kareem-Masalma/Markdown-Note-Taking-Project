@@ -1,17 +1,14 @@
 from fastapi import APIRouter, Depends, status
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.tokens import check_token
-from src.common.db.connection import Connection
+from src.dependencies.issue import get_issue_service
+from src.dependencies.languagetool import get_languagetool_service
 from src.models.history import History
-from src.models.user import User
-from src.repositories.history import HistoryRepository
-from src.repositories.issue import IssueRepository
 from src.schemas.history import HistoryResponse
 from src.services.issue import IssueService
 from src.services.languagetool import LanguageToolService
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(check_token)])
 
 
 @router.get(
@@ -28,20 +25,11 @@ router = APIRouter()
 )
 async def check_version_grammar(
     version_id: int,
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+    language_tool_service: LanguageToolService = Depends(get_languagetool_service),
 ):
-    try:
-        language_tool_service = LanguageToolService(HistoryRepository(session))
-        issues = await language_tool_service.check_grammar(version_id)
-        if issues and len(issues) > 0:
-            issue_service = IssueService(IssueRepository(session))
-            for issue in issues:
-                await issue_service.create_issue(issue, version_id)
 
-        return issues
-    except Exception as e:
-        raise e
+    issues = await language_tool_service.check_grammar(version_id)
+    return issues
 
 
 @router.get(
@@ -57,10 +45,7 @@ async def check_version_grammar(
     status_code=status.HTTP_200_OK,
 )
 async def fix_issue(
-    issue_id: int,
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+    issue_id: int, issue_service: IssueService = Depends(get_issue_service)
 ):
-    issue_service = IssueService(IssueRepository(session))
     version: History = await issue_service.fix_issue(issue_id)
     return version

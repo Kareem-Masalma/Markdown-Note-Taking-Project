@@ -9,8 +9,11 @@ from src.repositories.issue import IssueRepository
 
 
 class IssueService:
-    def __init__(self, issue_repository: IssueRepository):
+    def __init__(
+        self, issue_repository: IssueRepository, history_repository: HistoryRepository
+    ):
         self.issue_repository = issue_repository
+        self.history_repository = history_repository
 
     async def create_issue(self, issue: Dict[str, Any], version_id: int):
         """
@@ -46,9 +49,7 @@ class IssueService:
         if issue.fixed:
             raise HTTPException(status_code=400, detail="Issue already fixed")
 
-        history_repository = HistoryRepository(self.issue_repository.session)
-
-        version: History = await history_repository.get_version_by_id(issue.version_id)
+        version: History = await self.history_repository.get_by_id(issue.version_id)
 
         text = version.note_content
         suggestion = issue.suggestion
@@ -58,7 +59,7 @@ class IssueService:
         version.note_content = fixed_text
         issue.fixed = 1
 
-        await history_repository.update_version(version)
+        await self.history_repository.update_version(version)
         await self.issue_repository.update_issue(issue)
 
         return version

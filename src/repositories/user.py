@@ -43,29 +43,23 @@ class UserRepository:
         :param user: The new data to update the user.
         :return: The updated user
         """
-        try:
-            update_data = user.model_dump(exclude_unset=True)
-            for field, value in update_data.items():
-                setattr(stored_user, field, value)
 
-            await self.session.commit()
-            await self.session.refresh(user)
-        except Exception as e:
-            await self.session.rollback()
-            raise e
+        update_data = user.model_dump(exclude_unset=True)
+        for field, value in update_data.items():
+            setattr(stored_user, field, value)
+
+        await self.session.commit()
+        await self.session.refresh(user)
 
     async def delete_user(self, username: str):
         """
         This method to delete a user from the database.
         :param username: The user to be deleted.
         """
-        try:
-            user = await self.get_user_by_username(username)
-            user.deleted = 1
-            await self.session.commit()
-        except Exception as e:
-            await self.session.rollback()
-            raise e
+
+        user = await self.get_user_by_username(username)
+        user.deleted = 1
+        await self.session.commit()
 
     async def add_new_user(self, user: User):
         """

@@ -1,15 +1,12 @@
 from fastapi import APIRouter, Depends, status
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.tokens import check_token
-from src.common.db.connection import Connection
-from src.models.user import User
-from src.repositories.folder import FolderRepository
+from src.dependencies.folder import get_folder_service
 from src.schemas.folder import FolderResponse, FolderRequest
 from src.schemas.note import NoteResponse
 from src.services.folder import FolderService
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(check_token)])
 
 
 @router.get(
@@ -24,11 +21,7 @@ router = APIRouter()
     },
     status_code=status.HTTP_200_OK,
 )
-async def get_all_folders(
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
-):
-    folder_service = FolderService(FolderRepository(session))
+async def get_all_folders(folder_service: FolderService = Depends(get_folder_service)):
     notes = await folder_service.get_all_folders()
     return notes
 
@@ -46,11 +39,8 @@ async def get_all_folders(
     status_code=status.HTTP_200_OK,
 )
 async def get_folder_by_id(
-    folder_id: int,
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+    folder_id: int, folder_service: FolderService = Depends(get_folder_service)
 ):
-    folder_service = FolderService(FolderRepository(session))
     folder = await folder_service.get_folder_by_id(folder_id)
 
     return folder
@@ -69,12 +59,9 @@ async def get_folder_by_id(
     status_code=status.HTTP_200_OK,
 )
 async def get_folders_notes(
-    folder_id: int,
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+    folder_id: int, folder_service: FolderService = Depends(get_folder_service)
 ):
-    folder_service = FolderService(FolderRepository(session))
-    notes = folder_service.get_folder_notes(folder_id)
+    notes = await folder_service.get_folder_notes(folder_id)
     return notes
 
 
@@ -90,17 +77,10 @@ async def get_folders_notes(
     status_code=status.HTTP_201_CREATED,
 )
 async def create_folder(
-    folder: FolderRequest,
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+    folder: FolderRequest, folder_service: FolderService = Depends(get_folder_service)
 ):
-    try:
-        folder_service = FolderService(FolderRepository(session))
-        folder = await folder_service.create_folder(folder)
-        return folder
-    except Exception as e:
-        await session.rollback()
-        raise e
+    folder = await folder_service.create_folder(folder)
+    return folder
 
 
 @router.patch(
@@ -118,16 +98,10 @@ async def create_folder(
 async def rename_folder(
     folder_id: int,
     new_name: str,
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+    folder_service: FolderService = Depends(get_folder_service),
 ):
-    try:
-        folder_service = FolderService(FolderRepository(session))
-        folder = await folder_service.rename_folder(folder_id, new_name)
-        return folder
-    except Exception as e:
-        await session.rollback()
-        raise e
+    folder = await folder_service.rename_folder(folder_id, new_name)
+    return folder
 
 
 @router.delete(
@@ -141,14 +115,7 @@ async def rename_folder(
     status_code=status.HTTP_200_OK,
 )
 async def delete_folder(
-    folder_id: int,
-    user: User = Depends(check_token),
-    session: AsyncSession = Depends(Connection.get_session),
+    folder_id: int, folder_service: FolderService = Depends(get_folder_service)
 ):
-    try:
-        folder_service = FolderService(FolderRepository(session))
-        deleted = await folder_service.delete_folder(folder_id)
-        return deleted
-    except Exception as e:
-        await session.rollback()
-        raise e
+    deleted = await folder_service.delete_folder(folder_id)
+    return deleted
