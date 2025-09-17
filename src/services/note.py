@@ -33,8 +33,11 @@ from src.services.history import HistoryService
 class NoteService:
 
     def __init__(
-            self, note_repository: NoteRepository, user_repository: UserRepository, tag_repository: TagRepository,
-            history_service: HistoryService
+        self,
+        note_repository: NoteRepository,
+        user_repository: UserRepository,
+        tag_repository: TagRepository,
+        history_service: HistoryService,
     ) -> None:
         self.note_repository = note_repository
         self.user_repository = user_repository
@@ -137,7 +140,9 @@ class NoteService:
             if tags_names:
                 exists, tags = await self.tag_repository.validate_tags(tags_names)
                 if not exists:
-                    raise HTTPException(status_code=404, detail=f"Tags {tags} not found")
+                    raise HTTPException(
+                        status_code=404, detail=f"Tags {tags} not found"
+                    )
 
             updated_note = await self.note_repository.update_note(stored_note, note)
             updated_note.tags = tags
@@ -151,8 +156,12 @@ class NoteService:
                 title=updated_note.title,
                 content=updated_note.content,
                 username=updated_note.user.username,
-                parent=ParentResponse(id=updated_note.parent.id, name=updated_note.parent.name),
-                tags=[TagResponse(id=tag.id, name=tag.name) for tag in updated_note.tags],
+                parent=ParentResponse(
+                    id=updated_note.parent.id, name=updated_note.parent.name
+                ),
+                tags=[
+                    TagResponse(id=tag.id, name=tag.name) for tag in updated_note.tags
+                ],
             )
             return note_response
         except Exception as e:

@@ -35,9 +35,7 @@ class TagRepository(BaseRepository[Tag]):
         if not tag_names:
             return True, []
 
-        result = await self.session.execute(
-            select(Tag).where(Tag.name.in_(tag_names))
-        )
+        result = await self.session.execute(select(Tag).where(Tag.name.in_(tag_names)))
         tags = result.scalars().all()
 
         existing_names = {tag.name for tag in tags}

@@ -17,5 +17,7 @@ def get_note_service(
     user_repository: UserRepository = UserRepository(session)
     tag_repository: TagRepository = TagRepository(session)
     history_service = HistoryService(HistoryRepository(session))
-    note_service = NoteService(note_repository, user_repository, tag_repository, history_service)
+    note_service = NoteService(
+        note_repository, user_repository, tag_repository, history_service
+    )
     return note_service
