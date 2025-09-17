@@ -46,7 +46,7 @@ def encrypt_jwt_token(token: str) -> dict[str, str | int]:
     try:
         data = jwt.decode(token, SECRETE, ALGO)
         return data
-    except Exception as e:
+    except Exception:
         raise HTTPException(status_code=409)
 
 

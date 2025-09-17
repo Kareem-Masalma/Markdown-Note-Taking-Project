@@ -6,7 +6,10 @@ delete note, update note, add new note.
 from fastapi import HTTPException
 
 from src.models.note import Note
+from src.models.user import User
 from src.repositories.note import NoteRepository
+from src.repositories.tag import TagRepository
+from src.repositories.user import UserRepository
 from src.schemas.folder import ParentResponse
 from src.schemas.note import NoteUpdate, NoteRequest, NoteResponse
 from src.schemas.tag import TagResponse
@@ -30,9 +33,12 @@ from src.services.history import HistoryService
 class NoteService:
 
     def __init__(
-        self, note_repository: NoteRepository, history_service: HistoryService
+            self, note_repository: NoteRepository, user_repository: UserRepository, tag_repository: TagRepository,
+            history_service: HistoryService
     ) -> None:
         self.note_repository = note_repository
+        self.user_repository = user_repository
+        self.tag_repository = tag_repository
         self.history_service = history_service
 
     async def get_all_notes(self) -> list[NoteResponse] | None:
@@ -126,19 +132,19 @@ class NoteService:
             if not stored_note:
                 raise HTTPException(status_code=404, detail=f"Note {note_id} not found")
 
-            await self.note_repository.update_note(stored_note, note)
+            updated_note = await self.note_repository.update_note(stored_note, note)
 
             await self.history_service.create_new_history_version(
                 stored_note, f"Note updated"
             )
 
             note_response = NoteResponse(
-                id=note.id,
+                id=updated_note.id,
                 title=note.title,
                 content=note.content,
-                username=note.user.username,
-                parent=ParentResponse(id=note.parent.id, name=note.parent.name),
-                tags=[TagResponse(id=tag.id, name=tag.name) for tag in note.tags],
+                username=updated_note.user.username,
+                parent=ParentResponse(id=updated_note.parent.id, name=updated_note.parent.name),
+                tags=[TagResponse(id=tag.id, name=tag.name) for tag in updated_note.tags],
             )
             return note_response
         except Exception as e:
@@ -175,22 +181,33 @@ class NoteService:
         :return: The new note created.
         """
         try:
+
+            user: User = await self.user_repository.get_user_by_username(note.username)
+
+            if not user:
+                raise HTTPException(status_code=404, detail="User not found")
+
+            tags_exist = await self.tag_repository.validate_tags(note.tags)
+
+            if not tags_exist[0]:
+                raise HTTPException(status_code=404, detail=f"Tags {tags_exist[1]} not found")
+
             new_note = Note(
                 title=note.title,
                 content=note.content,
-                user_id=note.user_id,
+                username=note.username,
                 parent_id=note.parent_id,
             )
 
             await self.note_repository.create(new_note)
 
-            tags = note.tag_ids
+            tags = note.tags
             if tags:
                 for tag in tags:
                     await self.note_repository.add_tag_note(new_note.id, tag)
 
             await self.history_service.create_new_history_version(
-                new_note, f"Note created: {note.id}, {note.title}"
+                new_note, f"Note created: {new_note.id}, {note.title}"
             )
             return new_note
         except Exception as e:

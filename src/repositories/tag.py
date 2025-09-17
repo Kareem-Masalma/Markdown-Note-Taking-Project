@@ -30,3 +30,17 @@ class TagRepository(BaseRepository[Tag]):
         query = select(Tag).where((Tag.deleted == 0) & (Tag.name == tag_name))
         res = await self.session.execute(query)
         return res.scalars().first()
+
+    async def validate_tags(self, tag_ids: list[int]):
+        if not tag_ids:
+            return True
+
+        result = await self.session.execute(
+            select(Tag.id).where(Tag.id.in_(tag_ids))
+        )
+        existing_ids = {row[0] for row in result.all()}
+
+        missing_ids = set(tag_ids) - existing_ids
+        if missing_ids:
+            return False, missing_ids
+        return True

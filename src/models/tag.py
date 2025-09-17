@@ -9,6 +9,6 @@ class Tag(Connection.get_base()):
     __tablename__ = "Tags"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String, nullable=False)
+    name = Column(String, nullable=False, unique=True)
     deleted = Column(Integer, nullable=False, default=0)
     notes = relationship("Note", secondary=note_tags, back_populates="tags")
