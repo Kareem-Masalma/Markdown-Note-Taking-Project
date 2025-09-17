@@ -60,8 +60,8 @@ class NoteUpdate(BaseModel):
 
     title: Optional[str] = Field(None, description="The new title of the note")
     content: Optional[str] = Field(None, description="The new content of the note")
-    tag_ids: Optional[List[int]] = Field(
-        None, description="Updated list of tag IDs attached to the note"
+    tag_names: Optional[List[str]] = Field(
+        None, description="Updated list of tag names attached to the note"
     )
 
     model_config = {
@@ -70,7 +70,7 @@ class NoteUpdate(BaseModel):
                 {
                     "title": "Updated project title",
                     "content": "Refactor the project to improve maintainability",
-                    "tag_ids": [2, 3],
+                    "tag_names": ["project", "training"],
                 }
             ]
         }

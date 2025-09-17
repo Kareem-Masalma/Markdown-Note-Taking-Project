@@ -6,19 +6,11 @@ database.
 """
 
 from fastapi import APIRouter, Depends, Response, Header, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.tokens import check_token
-from src.common.db.connection import Connection
 from src.common.utils.generate_etag import generate_etag
 from src.dependencies.note import get_note_service
-from src.models.user import User
-from src.repositories.history import HistoryRepository
-from src.repositories.note import NoteRepository
-from src.schemas.folder import ParentResponse
 from src.schemas.note import NoteResponse, NoteRequest, NoteUpdate
-from src.schemas.tag import TagResponse
-from src.services.history import HistoryService
 from src.services.note import NoteService
 
 router = APIRouter(dependencies=[Depends(check_token)])

@@ -132,7 +132,15 @@ class NoteService:
             if not stored_note:
                 raise HTTPException(status_code=404, detail=f"Note {note_id} not found")
 
+            tags_names = note.tag_names
+            tags = []
+            if tags_names:
+                exists, tags = await self.tag_repository.validate_tags(tags_names)
+                if not exists:
+                    raise HTTPException(status_code=404, detail=f"Tags {tags} not found")
+
             updated_note = await self.note_repository.update_note(stored_note, note)
+            updated_note.tags = tags
 
             await self.history_service.create_new_history_version(
                 stored_note, f"Note updated"
@@ -140,8 +148,8 @@ class NoteService:
 
             note_response = NoteResponse(
                 id=updated_note.id,
-                title=note.title,
-                content=note.content,
+                title=updated_note.title,
+                content=updated_note.content,
                 username=updated_note.user.username,
                 parent=ParentResponse(id=updated_note.parent.id, name=updated_note.parent.name),
                 tags=[TagResponse(id=tag.id, name=tag.name) for tag in updated_note.tags],
