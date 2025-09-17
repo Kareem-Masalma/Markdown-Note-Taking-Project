@@ -187,10 +187,10 @@ class NoteService:
             if not user:
                 raise HTTPException(status_code=404, detail="User not found")
 
-            tags_exist = await self.tag_repository.validate_tags(note.tags)
+            exists, tags = await self.tag_repository.validate_tags(note.tags)
 
-            if not tags_exist[0]:
-                raise HTTPException(status_code=404, detail=f"Tags {tags_exist[1]} not found")
+            if not exists:
+                raise HTTPException(status_code=404, detail=f"Tags {tags[1]} not found")
 
             new_note = Note(
                 title=note.title,
@@ -201,10 +201,8 @@ class NoteService:
 
             await self.note_repository.create(new_note)
 
-            tags = note.tags
             if tags:
-                for tag in tags:
-                    await self.note_repository.add_tag_note(new_note.id, tag)
+                new_note.tags = tags
 
             await self.history_service.create_new_history_version(
                 new_note, f"Note created: {new_note.id}, {note.title}"

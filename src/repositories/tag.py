@@ -31,16 +31,19 @@ class TagRepository(BaseRepository[Tag]):
         res = await self.session.execute(query)
         return res.scalars().first()
 
-    async def validate_tags(self, tag_ids: list[int]):
-        if not tag_ids:
-            return True
+    async def validate_tags(self, tag_names: list[str]):
+        if not tag_names:
+            return True, []
 
         result = await self.session.execute(
-            select(Tag.id).where(Tag.id.in_(tag_ids))
+            select(Tag).where(Tag.name.in_(tag_names))
         )
-        existing_ids = {row[0] for row in result.all()}
+        tags = result.scalars().all()
 
-        missing_ids = set(tag_ids) - existing_ids
-        if missing_ids:
-            return False, missing_ids
-        return True
+        existing_names = {tag.name for tag in tags}
+        missing_names = set(tag_names) - existing_names
+
+        if missing_names:
+            return False, missing_names
+
+        return True, tags

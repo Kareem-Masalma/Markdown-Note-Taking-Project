@@ -12,8 +12,8 @@ class NoteRequest(BaseModel):
     title: str = Field(..., description="The title of the note")
     content: str = Field("", description="The content of the note")
     username: str = Field(..., description="The username who owns the note")
-    tags: Optional[List[int]] = Field(
-        default=[0], description="List of tag ids attached to the note"
+    tags: Optional[List[str]] = Field(
+        default=[0], description="List of tag names attached to the note"
     )
     parent_id: Optional[int] = Field(default=0)
 
@@ -24,7 +24,7 @@ class NoteRequest(BaseModel):
                     "title": "Implement the project",
                     "content": "Finish the implementation of the final project for the internship",
                     "username": "kareem",
-                    "tag_ids": [1, 2],
+                    "tag_names": ["project", "training"],
                 }
             ]
         }
