@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.common.db.connection import Connection
 from src.models.user import User
-from jose import jwt
+import jwt
 from src.config.definitions import SECRETE, ALGO
 
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -61,11 +61,16 @@ async def check_token(
     :param session: This is the async session used to handle the database.
     :return: The user on success, else it raises 409 HTTPException.
     """
-    token = token.credentials
-    data = encrypt_jwt_token(token)
-    username = data["username"]
-    user_service = UserService(UserRepository(session))
-    saved_user = await user_service.get_user_by_username(username)
-    if not saved_user:
-        raise HTTPException(status_code=409, detail="Unauthorized")
-    return saved_user
+    try:
+        token = token.credentials
+        data = encrypt_jwt_token(token)
+        username = data["username"]
+        user_service = UserService(UserRepository(session))
+        saved_user = await user_service.get_user_by_username(username)
+        if not saved_user:
+            raise HTTPException(status_code=409, detail="Unauthorized")
+        return saved_user
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
